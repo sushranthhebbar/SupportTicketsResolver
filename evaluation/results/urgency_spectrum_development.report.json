@@ -1,0 +1,48 @@
+{
+  "sample_info": {
+    "source_path": "C:\\Users\\sushr\\OneDrive\\Documents\\SupportTicketsResolver\\evaluation\\data\\development_tickets.json",
+    "results_path": "C:\\Users\\sushr\\OneDrive\\Documents\\SupportTicketsResolver\\evaluation\\results\\urgency_spectrum_development.jsonl",
+    "tickets_selected": 30,
+    "tickets_processed": 30,
+    "errors": 0,
+    "selection": "18 diverse tickets plus 6 identical-text pairs with conflicting reference urgency labels.",
+    "reference_labels_sent_to_classifier": false
+  },
+  "observations": {
+    "route_counts": {
+      "escalate": 4,
+      "review": 26
+    },
+    "classifier_marked_urgency_ambiguous": 4,
+    "evidence_quotes_supported_by_ticket": 29,
+    "raw_match_to_supplied_reference_labels": {
+      "matches": 12,
+      "compared": 30,
+      "note": "Descriptive only. The sample intentionally includes contradictory reference labels; this is not a standalone quality score."
+    },
+    "reference_conflict_tickets_in_sample": 12,
+    "identical_text_prediction_disagreements": [
+      {
+        "ticket_ids": [
+          "DEV-0026",
+          "DEV-0055"
+        ],
+        "predicted_urgencies": [
+          "low",
+          "medium"
+        ]
+      },
+      {
+        "ticket_ids": [
+          "DEV-0147",
+          "DEV-0412"
+        ],
+        "predicted_urgencies": [
+          "low",
+          "medium"
+        ]
+      }
+    ]
+  },
+  "results_path": "C:\\Users\\sushr\\OneDrive\\Documents\\SupportTicketsResolver\\evaluation\\results\\urgency_spectrum_development.jsonl"
+}
