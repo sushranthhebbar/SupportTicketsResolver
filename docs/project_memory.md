@@ -96,3 +96,12 @@ User manually ran `tests/test_evaluation.py` and confirmed all tests passed. The
 - Added `src/guardrails.py`: no-hit and insufficient-evidence paths return a blank draft and clarification/escalation recommendation; citations must match retrieved source IDs and inline citations; credential-like or prompt-injection-like response text is blocked; malformed output, timeout, provider errors, and rate limits fail safely.
 - Integrated retrieval, drafting, safe routing overrides, and answer decision logging in `src/pipeline.py`. Drafts are never sent to customers. Added eight answer/guardrail/pipeline tests. User manually ran the suite inside `.venv311` and confirmed all 29 tests pass. Command: `.\\.venv311\\Scripts\\python.exe -m pytest tests/ -v`.
 
+## Current pending work (2026-11-01)
+
+- **Verification:** User confirmed all 29 tests pass inside `.venv311`. Verify the README command and CI workflow during the planned Friday evaluation task.
+- **Friday sprint gate:** Run the full unattended evaluation and review metrics/failures. The hidden 120-ticket evaluation set is not distributed; the supplied validation set contains 80 tickets, so the hidden-set run is blocked until that data is available.
+- **Urgency quality (parked by user):** Revisit later. The 30-ticket sample matched 12/30 supplied urgency labels, but labels can conflict and `openrouter/free` dispatched seven underlying models. This is diagnostic only, not a reliable quality score. Preserve labels; report conflicts and route model-detected ambiguity to human review.
+- **Confidence calibration / FR-09:** No calibration artifact exists. The target of at least 85% per-class precision and recall has not been demonstrated on reliable held-out labels. Until calibrated confidence is configured, non-urgent cases remain in human review.
+- **Remaining product tasks:** Implement FR-06 escalation summaries; build the FastAPI app and FR-04 agent flow to edit, reject, or approve drafts; capture agent decisions and ticket outcomes/feedback for FR-07/FR-08; complete the fairness audit, monitoring dashboard, and report/video/submission package.
+- **Setup:** Clean-checkout dependency installation remains unverified. The existing project environment passed user-run tests. Chroma previously emitted non-fatal telemetry compatibility warnings.
+
