@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support draft review</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.5 system-ui, sans-serif; color: #17212b; background: #f3f6f8; }
+    body { margin: 0; }
+    header { background: #17324d; color: white; padding: 1.2rem max(1rem, calc((100vw - 1040px) / 2)); }
+    header a { color: #d8ebfb; margin-left: 1rem; }
+    main { max-width: 1040px; margin: 1.5rem auto; padding: 0 1rem; display: grid; gap: 1rem; grid-template-columns: minmax(220px, 300px) 1fr; }
+    section, .panel { background: white; border: 1px solid #d8e0e6; border-radius: 10px; padding: 1rem; }
+    h1, h2 { margin: 0 0 .65rem; } h1 { font-size: 1.25rem; } h2 { font-size: 1.05rem; }
+    label { display: block; font-weight: 600; margin: .65rem 0 .25rem; }
+    input, textarea, select { box-sizing: border-box; width: 100%; font: inherit; border: 1px solid #aebbc6; border-radius: 6px; padding: .55rem; }
+    textarea { min-height: 180px; resize: vertical; }
+    button { font: inherit; border: 0; border-radius: 6px; padding: .55rem .8rem; color: white; background: #215c8c; cursor: pointer; }
+    button.secondary { color: #17324d; background: #e4edf4; } button.danger { background: #a83232; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .7rem; }
+    .muted { color: #4b5b68; font-size: .92rem; } .error { color: #a32121; white-space: pre-wrap; }
+    .success { color: #17633a; white-space: pre-wrap; }
+    .disclosure { background: #eef5fa; border-left: 4px solid #427da6; padding: .7rem; }
+    .sources { margin: .3rem 0 1rem; padding-left: 1.2rem; }
+    @media (max-width: 700px) { main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header><h1>Support reply draft review</h1><div>Review and decide before any customer delivery. <a href="/dashboard">Open operations dashboard</a></div></header>
+  <main>
+    <aside class="panel">
+      <h2>Agent access</h2>
+      <label for="token">API token</label><input id="token" type="password" autocomplete="off">
+      <label for="reviewer">Agent ID</label><input id="reviewer" autocomplete="off" placeholder="Your agent ID">
+      <div class="row"><button id="connect">Load pending drafts</button></div>
+      <label for="queue">Pending drafts</label><select id="queue" size="12"><option value="">Connect to load the queue</option></select>
+      <p class="muted">The token stays in this page's memory and is cleared when you close or reload it.</p>
+    </aside>
+    <section>
+      <h2 id="ticket-title">Choose a draft</h2>
+      <p id="notice" class="muted">Agent approval prepares a reviewed response. This tool does not send messages.</p>
+      <div id="details" hidden>
+        <h3>Ticket context</h3><p><strong id="channel"></strong></p><p id="subject"></p><p id="ticket-body"></p>
+        <h3>Retrieved sources</h3><ul id="sources" class="sources"></ul>
+        <h3>Decision history for this ticket</h3><ol id="history"></ol>
+        <h3>Customer disclosure</h3><p id="disclosure" class="disclosure"></p>
+        <label for="draft">Reply draft</label><textarea id="draft"></textarea>
+        <label for="reject-reason">Rejection reason</label><input id="reject-reason" maxlength="1000" placeholder="Required when rejecting">
+        <div class="row">
+          <button id="save" class="secondary">Save edit</button>
+          <button id="approve">Approve</button>
+          <button id="reject" class="danger">Reject</button>
+          <button id="escalate" class="secondary">Record escalation</button>
+        </div>
+        <hr>
+        <h3>Record outcome and agent feedback</h3>
+        <p class="muted">Record observed ticket outcomes. These entries are descriptive and do not attribute an outcome to AI assistance.</p>
+        <label for="fcr">Resolved on first contact</label><select id="fcr"><option value="">Not recorded</option><option value="true">Yes</option><option value="false">No</option></select>
+        <label for="escalated">Ticket escalated</label><select id="escalated"><option value="">Not recorded</option><option value="true">Yes</option><option value="false">No</option></select>
+        <label for="repeat">Repeat contact</label><select id="repeat"><option value="">Not recorded</option><option value="true">Yes</option><option value="false">No</option></select>
+        <label for="resolution-time">Resolution time (minutes)</label><input id="resolution-time" type="number" min="0" step="any">
+        <label for="csat">Customer satisfaction (1–5)</label><input id="csat" type="number" min="1" max="5" step="any">
+        <label for="tier">Customer tier</label><input id="tier" maxlength="120" placeholder="e.g. business">
+        <label for="fluency">Language fluency group</label><input id="fluency" maxlength="120" placeholder="e.g. non_fluent">
+        <label for="feedback-category">Feedback category</label><select id="feedback-category"><option value="">Not recorded</option><option value="draft_accurate">Draft accurate</option><option value="missing_context">Missing context</option><option value="wrong_source">Wrong source</option><option value="unsafe">Unsafe</option><option value="tone">Tone</option><option value="other">Other</option></select>
+        <label for="feedback">Agent feedback</label><textarea id="feedback" maxlength="2000" placeholder="Optional notes"></textarea>
+        <div class="row"><button id="save-outcome" class="secondary">Save outcome and feedback</button></div>
+      </div>
+      <p id="message" role="status"></p>
+    </section>
+  </main>
+  <script>
+    (() => {
+      let token = "";
+      let selectedId = "";
+      let selectedDraft = null;
+      let savedDraftText = "";
+      const $ = (id) => document.getElementById(id);
+      const message = (text, kind = "muted") => { $("message").className = kind; $("message").textContent = text; };
+      const api = async (path, options = {}) => {
+        const response = await fetch(path, {
+          ...options,
+          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", ...(options.headers || {}) }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || `Request failed (${response.status})`);
+        return data;
+      };
+      const showDraft = (draft) => {
+        selectedDraft = draft;
+        selectedId = draft.decision_id;
+        savedDraftText = draft.draft;
+        $("ticket-title").textContent = `Ticket ${draft.ticket_id} · ${draft.status}`;
+        const context = draft.ticket_context || {};
+        $("channel").textContent = context.channel ? `Channel: ${context.channel}` : "";
+        $("subject").textContent = context.subject ? `Subject: ${context.subject}` : "Ticket subject unavailable for this older draft.";
+        $("ticket-body").textContent = context.body || "Ticket body unavailable for this older draft.";
+        $("draft").value = draft.draft;
+        $("disclosure").textContent = draft.customer_disclosure;
+        $("sources").replaceChildren();
+        for (const source of draft.sources) {
+          const item = document.createElement("li");
+          const heading = document.createElement("strong"); heading.textContent = `${source.doc_id}${source.title ? ` · ${source.title}` : ""}`;
+          const passage = document.createElement("p"); passage.textContent = source.passage || "Source passage unavailable for this older draft.";
+          item.append(heading, passage); $("sources").append(item);
+        }
+        $("details").hidden = false;
+        const open = draft.status === "pending";
+        for (const id of ["draft", "reject-reason"]) $(id).disabled = !open;
+        $("save").disabled = !open || draft.draft === savedDraftText;
+        $("approve").disabled = !open;
+        $("reject").disabled = !open;
+        $("escalate").disabled = !open;
+        message(draft.last_action === "escalate" ? "Escalation was recorded for this ticket; the draft remains open for final disposition." : draft.was_edited ? `Edited by ${draft.reviewer_id || "agent"}; approval is still required.` : "Review the draft, sources, and disclosure before deciding.");
+      };
+      const setValue = (id, value) => { $(id).value = value == null ? "" : String(value); };
+      const loadTicketInfo = async (ticketId) => {
+        $("history").replaceChildren();
+        try {
+          const history = await api(`/api/review/tickets/${encodeURIComponent(ticketId)}/history`);
+          for (const event of history.events) {
+            const item = document.createElement("li");
+            const sources = Array.isArray(event.sources_used) ? event.sources_used.map((source) => typeof source === "string" ? source : source.doc_id).filter(Boolean).join(", ") : "";
+            const generatedDraft = event.stage === "answer_drafting" && event.prediction && event.prediction.draft ? ` · generated draft: ${event.prediction.draft}` : "";
+            const escalation = event.stage === "escalation_summary" ? ` · escalation summary: ${JSON.stringify(event.prediction)}` : "";
+            item.textContent = `${event.timestamp} · ${event.stage} · ${event.action_taken}${sources ? ` · sources: ${sources}` : ""} · ${event.reason}${generatedDraft}${escalation}`;
+            $("history").append(item);
+          }
+        } catch (error) { message(`Could not load decision history: ${error.message}`, "error"); }
+        try {
+          const outcome = await api(`/api/review/tickets/${encodeURIComponent(ticketId)}/outcome`);
+          if (outcome) {
+            setValue("fcr", outcome.first_contact_resolution);
+            setValue("escalated", outcome.escalated);
+            setValue("repeat", outcome.repeat_contact);
+            setValue("resolution-time", outcome.resolution_time_minutes);
+            setValue("csat", outcome.csat_rating);
+            setValue("tier", outcome.customer_tier);
+            setValue("fluency", outcome.language_fluency);
+            setValue("feedback-category", outcome.feedback_category);
+            setValue("feedback", outcome.agent_feedback);
+          } else {
+            for (const id of ["fcr", "escalated", "repeat", "resolution-time", "csat", "tier", "fluency", "feedback-category", "feedback"]) setValue(id, "");
+          }
+        } catch (error) { message(`Could not load saved outcomes: ${error.message}`, "error"); }
+      };
+      $("connect").addEventListener("click", async () => {
+        token = $("token").value.trim();
+        if (!token) return message("Enter the configured agent API token.", "error");
+        try {
+          const drafts = await api("/api/review/drafts?status=pending");
+          $("queue").replaceChildren();
+          if (!drafts.length) { const option = document.createElement("option"); option.textContent = "No pending drafts"; option.value = ""; $("queue").append(option); }
+          for (const draft of drafts) {
+            const option = document.createElement("option"); option.value = draft.decision_id;
+            option.textContent = `${draft.ticket_id}${draft.was_edited ? " · edited" : ""}`; $("queue").append(option);
+          }
+          message(`Loaded ${drafts.length} pending draft(s).`, "success");
+          if (drafts.length) { $("queue").value = drafts[0].decision_id; showDraft(drafts[0]); await loadTicketInfo(drafts[0].ticket_id); }
+        } catch (error) { message(error.message, "error"); }
+      });
+      $("queue").addEventListener("change", async () => {
+        if (!$("queue").value) return;
+        try { const draft = await api(`/api/review/drafts/${encodeURIComponent($("queue").value)}`); showDraft(draft); await loadTicketInfo(draft.ticket_id); }
+        catch (error) { message(error.message, "error"); }
+      });
+      $("draft").addEventListener("input", () => {
+        const dirty = $("draft").value !== savedDraftText;
+        const open = selectedDraft && selectedDraft.status === "pending";
+        $("save").disabled = !open || !dirty;
+        $("approve").disabled = !open || dirty;
+        $("reject").disabled = !open || dirty;
+        $("escalate").disabled = !open || dirty;
+        if (dirty) message("Save the edit before approving or rejecting this visible text.");
+      });
+      $("save").addEventListener("click", async () => {
+        try {
+          const result = await api(`/api/review/drafts/${encodeURIComponent(selectedId)}/edit`, { method: "POST", body: JSON.stringify({ reviewer_id: $("reviewer").value, edited_draft: $("draft").value }) });
+          showDraft(result); message("Edit saved. The draft still needs approval.", "success");
+        } catch (error) { message(error.message, "error"); }
+      });
+      $("approve").addEventListener("click", async () => {
+        if (!window.confirm("Approve this response with the displayed AI disclosure and sources?")) return;
+        try {
+          const result = await api(`/api/review/drafts/${encodeURIComponent(selectedId)}/approve`, { method: "POST", body: JSON.stringify({ reviewer_id: $("reviewer").value }) });
+          showDraft(result); message("Approved and recorded. No customer message was sent.", "success");
+        } catch (error) { message(error.message, "error"); }
+      });
+      $("reject").addEventListener("click", async () => {
+        if (!window.confirm("Reject this draft?")) return;
+        try {
+          const result = await api(`/api/review/drafts/${encodeURIComponent(selectedId)}/reject`, { method: "POST", body: JSON.stringify({ reviewer_id: $("reviewer").value, rejection_reason: $("reject-reason").value }) });
+          showDraft(result); message("Draft rejected and recorded.", "success");
+        } catch (error) { message(error.message, "error"); }
+      });
+      $("escalate").addEventListener("click", async () => {
+        const reason = window.prompt("Why are you escalating this ticket?");
+        if (!reason) return;
+        try {
+          const result = await api(`/api/review/drafts/${encodeURIComponent(selectedId)}/escalate`, { method: "POST", body: JSON.stringify({ reviewer_id: $("reviewer").value, escalation_reason: reason }) });
+          showDraft(result); message("Agent escalation decision recorded in the ticket history.", "success");
+          await loadTicketInfo(result.ticket_id);
+        } catch (error) { message(error.message, "error"); }
+      });
+      $("save-outcome").addEventListener("click", async () => {
+        const payload = { reviewer_id: $("reviewer").value };
+        for (const [id, field] of [["fcr", "first_contact_resolution"], ["escalated", "escalated"], ["repeat", "repeat_contact"]]) {
+          if ($(id).value !== "") payload[field] = $(id).value === "true";
+        }
+        for (const [id, field] of [["resolution-time", "resolution_time_minutes"], ["csat", "csat_rating"]]) {
+          if ($(id).value !== "") payload[field] = Number($(id).value);
+        }
+        for (const [id, field] of [["tier", "customer_tier"], ["fluency", "language_fluency"], ["feedback-category", "feedback_category"], ["feedback", "agent_feedback"]]) {
+          if ($(id).value.trim() !== "") payload[field] = $(id).value.trim();
+        }
+        try {
+          await api(`/api/review/tickets/${encodeURIComponent(selectedDraft.ticket_id)}/outcome`, { method: "POST", body: JSON.stringify(payload) });
+          message("Observed outcome and feedback saved.", "success");
+        } catch (error) { message(error.message, "error"); }
+      });
+    })();
+  </script>
+</body>
+</html>

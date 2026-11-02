@@ -102,6 +102,65 @@ User manually ran `tests/test_evaluation.py` and confirmed all tests passed. The
 - **Friday sprint gate:** Run the full unattended evaluation and review metrics/failures. The hidden 120-ticket evaluation set is not distributed; the supplied validation set contains 80 tickets, so the hidden-set run is blocked until that data is available.
 - **Urgency quality (parked by user):** Revisit later. The 30-ticket sample matched 12/30 supplied urgency labels, but labels can conflict and `openrouter/free` dispatched seven underlying models. This is diagnostic only, not a reliable quality score. Preserve labels; report conflicts and route model-detected ambiguity to human review.
 - **Confidence calibration / FR-09:** No calibration artifact exists. The target of at least 85% per-class precision and recall has not been demonstrated on reliable held-out labels. Until calibrated confidence is configured, non-urgent cases remain in human review.
-- **Remaining product tasks:** Implement FR-06 escalation summaries; build the FastAPI app and FR-04 agent flow to edit, reject, or approve drafts; capture agent decisions and ticket outcomes/feedback for FR-07/FR-08; complete the fairness audit, monitoring dashboard, and report/video/submission package.
+- **Remaining product tasks:** FR-06, FR-04, FR-07/FR-08 implementations are complete and user-verified by passing tests. The initial monitoring dashboard is implemented; its focused tests await the user's manual run. Complete the fairness audit and report/video/submission package.
 - **Setup:** Clean-checkout dependency installation remains unverified. The existing project environment passed user-run tests. Chroma previously emitted non-fatal telemetry compatibility warnings.
+
+## Friday evaluation attempt (2026-11-01)
+
+- Verified the README's offline test command and `.github/workflows/ci.yml`: CI uses Python 3.11, installs `requirements.txt`, and runs `python -m pytest tests/ -v` without credentials. Updated the README's local test command to invoke `.venv311` directly.
+- Ran the full pipeline evaluation on the supplied 80-ticket validation set using `openrouter/free`; output is in `evaluation/results/validation_2026-11-01.jsonl` with report `evaluation/results/validation_2026-11-01.report.json`.
+- Reproduction command from the project root (uses the project virtual environment): `.venv311\Scripts\python.exe .\scripts\run_evaluation.py --input evaluation\data\validation_tickets.json --output evaluation\results\validation_2026-11-01.jsonl --processor src.pipeline:process_ticket --system-version 0.1`.
+- Artifact verification command: `.venv311\Scripts\python.exe .\scripts\verify_evaluation_artifacts.py --input evaluation\data\validation_tickets.json --results evaluation\results\validation_2026-11-01.jsonl --report evaluation\results\validation_2026-11-01.report.json`.
+- Provider throttling prevented completion: 6/80 tickets succeeded, 73 calls returned HTTP 429, and one response lacked the expected `choices` field. The hidden 120-ticket evaluation set remains unavailable. This is an incomplete operational run and must not be treated as a quality result.
+- Updated metric calculation to exclude processor failures from classification, routing, retrieval, citation, and safety denominators; reports now expose successful scoring coverage and excluded failures. Added `scripts/verify_evaluation_artifacts.py`, which checks ID coverage/order, duplicates, label/history isolation, and agreement between JSONL and report counts. Verification ran and correctly failed the incomplete run (6/80; 74 processor errors).
+- Manual test run still needed after these code changes: `.venv311\Scripts\python.exe -m pytest tests/ -v`. User will run it and report results.
+- Follow-up: repeat the unattended evaluation after provider rate limits clear or with a controlled model/quota; then rerun the artifact verifier. Do not rely on the 6-ticket metrics.
+- User subsequently ran the test suite inside `.venv311` and confirmed all 29 tests pass.
+
+## Product implementation, step 1: FR-06 escalation summaries (2026-11-01)
+
+- Confirmed the Stage 2 PRD criterion: summaries include the issue, relevant ticket history, troubleshooting attempted, relevant documentation, and unresolved uncertainty; distinguish ticket facts from system inferences; and flag missing troubleshooting instead of inventing it.
+- Added `src/escalation.py` to assemble a structured summary from the normalized ticket, optional conversation history and agent-supplied troubleshooting, retrieved documentation, and routing/classification assessment. Missing context is explicitly marked. Summary is tagged for agent review.
+- Integrated summaries on escalation routes in `src/pipeline.py`; retrieval sources and the full summary are persisted in the SQLite decision log under `FR-06` and returned to callers. Summary generation is deterministic and does not make another model call.
+- Added two FR-06 tests in `tests/test_escalation.py` and updated README/architecture documentation. Tests have not been run; the user should run `.venv311\Scripts\python.exe -m pytest tests/ -v` and report the result before we move to the next implementation step.
+- The agent UI needed to actually review/edit/approve the summary remains part of the subsequent FastAPI/FR-04 step.
+- User subsequently confirmed the test suite passed after the FR-06 additions.
+
+## Product implementation, step 2: FR-04 agent review (2026-11-01)
+
+- Confirmed PRD acceptance: agents can review, edit, reject, or approve a draft before sending; approved customer-facing responses must disclose AI assistance and include sources. This local prototype does not send customer messages.
+- Added authenticated FastAPI endpoints in `src/app.py` and a browser review page at `/review` to list/read pending drafts and edit, approve, or reject a draft. The documented local launch binds to loopback; review endpoints require `AGENT_API_TOKEN`.
+- Added `src/review_store.py` with persistent `agent_reviews` state, append-only `agent_review` decision records, final-state protection against changing approved/rejected drafts, and renewed citation/safety validation after edits and before approval. Approval returns a reviewed draft with the disclosure statement and retrieved source IDs.
+- Persisted source titles and passages with draft decisions so agents can check the cited evidence in the review page.
+- Added three API workflow tests and documented configuration/usage. User's first test run showed all other tests passing but the three API tests errored during setup because installed Starlette `TestClient` passed the removed `app=` argument to the installed httpx client. Replaced those tests with async `httpx.AsyncClient` and `ASGITransport`; user rerun is pending. Command: `.venv311\Scripts\python.exe -m pytest tests/ -v`.
+- Access/retention policy and the final wording of the AI disclosure remain client decisions from NFR-04/FR-04; the prototype uses a shared bearer token and a proposed default disclosure.
+- Added a random local `AGENT_API_TOKEN` to the ignored `.env` without printing it. Started the app on loopback port 8000; `/review` returned HTTP 200 and the user confirmed the page is visible. The server session must remain running while the user uses the page.
+- User reran the full suite after switching the API tests to `ASGITransport` and confirmed all tests pass.
+
+## Product implementation, step 3: FR-07/FR-08 outcomes and feedback (2026-11-01)
+
+- Confirmed the PRD criteria: authorized reviewers need the sources shown, generated draft, and agent decisions; assisted-ticket records must capture available outcomes and feedback and support reporting by customer tier and language fluency without claiming AI caused an outcome.
+- Added an authenticated per-ticket decision-history endpoint exposing timestamped stage, model, prediction, source IDs, actions, reasons, guardrail results, and requirement traceability. The browser review page now displays the ticket's history, including the original generated draft.
+- Added `src/outcome_store.py` with an assisted-ticket-only outcome and feedback table, append-only outcome event logging, partial updates, and descriptive summaries for FCR, escalation, repeat contact, resolution time, CSAT, and feedback categories grouped by customer tier and language fluency.
+- Added authenticated outcome read/write endpoints and an outcomes summary endpoint. The review page includes fields for observed outcomes and agent feedback. Outcome summaries explicitly state that they do not establish causality.
+- Added an agent escalation action in the review flow and included it in the append-only ticket history; it records intent but does not invoke an external handoff.
+- Added tests for decision-history visibility, outcome capture, grouped reporting, escalation logging, and validation. On 2026-11-01 the user confirmed the tests pass; they ran inside `.venv311` with `.venv311\Scripts\python.exe -m pytest tests/ -v`.
+
+## Product implementation, step 4: monitoring dashboard (2026-11-01)
+
+- FR-07/FR-08 implementation is verified by the user's passing test run.
+- Added `src/dashboard.py` and authenticated `/api/dashboard/summary`, plus `/dashboard` with daily ticket volume, routing, intent/urgency/channel mix, guardrail failures, observed outcome coverage, and customer-tier/language-fluency outcome tables.
+- Outcome reporting is descriptive and makes no AI causality claim. The dashboard reports latency as unavailable because the current pipeline does not persist per-ticket latency; it does not substitute zero or infer a value.
+- Added channel to newly persisted classification records so channel mix can be reported. Older records without channel context are naturally excluded from that breakdown.
+- Added `tests/test_dashboard.py` for the aggregate summary, coverage, guardrail counts, page availability, and authentication. Static verification passed: `git diff --check` and AST parsing for the changed Python modules/tests.
+- User's first manual full-suite run reported one failure in `test_outcomes_require_assistance_and_valid_ranges`: a fresh SQLite database had no `decisions` table, and outcome capture raised `sqlite3.OperationalError` before it could return the expected `OutcomeNotFound`. Fixed outcome capture to initialize the decision schema before checking assistance; also made dashboard summary initialize the schema so an empty database can render. User subsequently confirmed all tests pass after the fix, using the documented `.venv311` environment.
+- The API was not running during dashboard implementation. To launch/reload it from the project root: `.venv311\Scripts\python.exe -m uvicorn src.app:app --host 127.0.0.1 --port 8000`; then open `http://127.0.0.1:8000/dashboard` and enter the local `AGENT_API_TOKEN` from `.env` to load data.
+- Next product step after dashboard verification: fairness audit. Governance criteria call for comparing ticket count, resolution rate, quality, variation from the best segment, and explanation across enterprise/business tier, fluent/non-fluent English, and short/long-complex tickets. Remaining delivery work includes the report/video/submission package.
+
+## Evaluation provider change (2026-11-02)
+
+- User prefers Groq over OpenRouter for the validation run and identified the Groq **free-tier** limits for `qwen/qwen3.8-27b`: 30 RPM, 1,000 RPD, 8,000 TPM, and 200,000 TPD. Groq's current model documentation confirms Qwen 3.8 27B supports JSON Object Mode, which matches the runtime request format. The request/day budget should be ample for the 80-ticket run; token throughput remains the likely constraint.
+- Added provider-neutral `MODEL_API_KEY` / `MODEL_API_URL` resolution with fallback support for `GROQ_API_KEY` and the legacy OpenRouter variables. Updated `.env.example` for Groq/Qwen and added `scripts/test_model_provider.py` as a one-request connection/JSON-mode smoke check.
+- Added provider configuration unit tests; they have not been run. User should run `.venv311\Scripts\python.exe -m pytest tests/ -v` manually. The actual validation rerun has not happened; user must place a Groq API key in `.env`, then run the connection check before the evaluation.
+- RPM and daily request caps are not the only possible limits: the reported 8K TPM may govern throughput. The evaluation is sequential, but the current client does not explicitly pace by token usage or retry 429 classification requests. Do not promise a throttle-free run based on request-count caps alone.
 

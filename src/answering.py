@@ -10,6 +10,7 @@ import requests
 from dotenv import load_dotenv
 
 from src.guardrails import safe_answer_failure, validate_grounded_answer
+from src.model_provider import resolve_api_key, resolve_api_url
 from src.tickets import NormalizedTicket, PROJECT_ROOT
 
 
@@ -74,7 +75,7 @@ def draft_grounded_reply(
             next_step="ask_clarification",
         )
 
-    key = api_key or os.getenv("OPENROUTER_API_KEY")
+    key = resolve_api_key(api_key)
     model_name = model or os.getenv("MODEL_NAME")
     if not key or key == "your_key_here" or not model_name:
         return safe_answer_failure(
@@ -110,9 +111,7 @@ def draft_grounded_reply(
 
     try:
         response = requester.post(
-            endpoint or os.getenv(
-                "OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions"
-            ),
+            resolve_api_url(endpoint),
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
             json={
                 "model": model_name,

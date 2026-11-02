@@ -9,6 +9,7 @@ from typing import Any, Mapping
 import requests
 from dotenv import load_dotenv
 
+from src.model_provider import resolve_api_key, resolve_api_url
 from src.tickets import NormalizedTicket, PROJECT_ROOT
 
 
@@ -97,7 +98,7 @@ def classify_ticket(
     Evaluation-only labels and any ambiguity annotation are never sent as ticket
     input. The model returns its own ``urgency_ambiguous`` assessment.
     """
-    key = api_key or os.getenv("OPENROUTER_API_KEY")
+    key = resolve_api_key(api_key)
     model_name = model or os.getenv("MODEL_NAME")
     if not key or key == "your_key_here":
         raise RuntimeError("OPENROUTER_API_KEY is missing from the project .env file")
@@ -130,9 +131,7 @@ def classify_ticket(
         + json.dumps(_ticket_payload(ticket), ensure_ascii=False)
     )
     response = requester.post(
-        endpoint or os.getenv(
-            "OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions"
-        ),
+        resolve_api_url(endpoint),
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
         json={
             "model": model_name,

@@ -26,10 +26,10 @@ def _rate(numerator: int, denominator: int) -> float | None:
 def _classification_metrics(
     rows: list[dict[str, Any]], expected_field: str, predicted_field: str
 ) -> dict[str, Any]:
-    expected = [row["expected"].get(expected_field) for row in rows]
+    scored_rows = [row for row in rows if row["result"] is not None]
+    expected = [row["expected"].get(expected_field) for row in scored_rows]
     predicted = [
-        (row["result"] or {}).get(predicted_field) if row["result"] else None
-        for row in rows
+        row["result"].get(predicted_field) for row in scored_rows
     ]
     classes = sorted(
         {value for value in expected + predicted if isinstance(value, str)}
@@ -67,6 +67,8 @@ def _classification_metrics(
         "per_class": per_class,
         "macro_precision": statistics.mean(precisions) if precisions else None,
         "macro_recall": statistics.mean(recalls) if recalls else None,
+        "scored_tickets": len(scored_rows),
+        "excluded_processing_errors": len(rows) - len(scored_rows),
     }
 
 
@@ -182,16 +184,16 @@ def build_metrics(
         retrieved = _source_ids(
             result.get("retrieved_sources", result.get("sources"))
         )
-        if record.labels.get("answerable_from_docs") is True and expected_docs:
+        if row["result"] is not None and record.labels.get("answerable_from_docs") is True and expected_docs:
             retrieval_eligible += 1
             retrieval_hits += bool(expected_docs & retrieved)
 
         cited = _source_ids(result.get("citations"))
-        if cited and expected_docs:
+        if row["result"] is not None and cited and expected_docs:
             citation_eligible += len(cited)
             citation_matches += len(cited & expected_docs)
 
-        if record.labels.get("must_not_auto_respond") is True and action == "auto_respond":
+        if row["result"] is not None and record.labels.get("must_not_auto_respond") is True and action == "auto_respond":
             unsafe_auto_responses += 1
         detections = result.get("private_data_detections", [])
         if isinstance(detections, list):
@@ -205,9 +207,12 @@ def build_metrics(
     route_matches = sum(
         expected == ((row["result"] or {}).get("route") or (row["result"] or {}).get("action"))
         for expected, row in zip(expected_routes, rows)
-        if isinstance(expected, str)
+        if isinstance(expected, str) and row["result"] is not None
     )
-    route_count = sum(isinstance(route, str) for route in expected_routes)
+    route_count = sum(
+        isinstance(expected, str) and row["result"] is not None
+        for expected, row in zip(expected_routes, rows)
+    )
 
     return {
         "run_info": {
@@ -231,6 +236,8 @@ def build_metrics(
             "intent_classification": _classification_metrics(rows, "intent", "intent"),
             "urgency_classification": _classification_metrics(rows, "urgency", "urgency"),
             "routing_accuracy": _rate(route_matches, route_count),
+            "routing_scored_tickets": route_count,
+            "routing_excluded_processing_errors": len(rows) - successful,
             "retrieval_hit_rate_on_answerable_tickets": _rate(
                 retrieval_hits, retrieval_eligible
             ),

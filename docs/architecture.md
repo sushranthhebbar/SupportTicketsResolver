@@ -3,15 +3,20 @@
 ## Current components
 
 - `src/tickets.py` loads ticket datasets and normalizes email, chat, documentation-comment, and forum records into a shared `NormalizedTicket` representation. Evaluation labels and historical outcomes are kept separately from runtime ticket fields.
-- `src/classification.py` sends normalized ticket fields to the configured OpenRouter chat-completions model. The model infers and returns intent, urgency, confidence, an urgency evidence excerpt, and its own ambiguity assessment; the input ticket contains no ambiguity flag.
+- `src/model_provider.py` resolves provider-neutral API key and URL settings, retaining legacy OpenRouter environment variables as fallbacks. `src/classification.py` sends normalized ticket fields to the configured OpenAI-compatible chat-completions endpoint. The model infers and returns intent, urgency, confidence, an urgency evidence excerpt, and its own ambiguity assessment; the input ticket contains no ambiguity flag.
 - `src/routing.py` applies the routing rules and confidence threshold. Ambiguous or unsupported urgency evidence always goes to human review. Clear security incidents and high-urgency tickets escalate. Other tickets require calibrated intent and urgency confidence of at least 0.80 to auto-respond; otherwise they go to review.
-- `src/answering.py` drafts a reply from retrieved passages through the configured OpenRouter model; it never sends replies to customers.
+- `src/escalation.py` prepares an FR-06 summary for agent review, keeping ticket text, supplied conversation history, troubleshooting attempts, retrieved documentation, and system assessments in separate fields. Missing context is called out as unresolved uncertainty rather than invented.
+- `src/app.py` exposes the authenticated FR-04 agent review API and serves `static/review.html`. Agents can list/read grounded drafts, edit them, approve them, or reject them. Edits and approvals must pass citation and safety validation again. Approval records the AI disclosure and source IDs; the app does not send customer messages.
+- `src/review_store.py` persists review state separately from append-only decisions, exposes per-ticket history, and logs agent edits, approvals, rejections, and escalation decisions for audit. Recording an escalation does not invoke an external handoff.
+- `src/outcome_store.py` records observed first-contact resolution, escalation, repeat contact, resolution time, satisfaction, segment fields, and agent feedback for assisted tickets. Its summary reports descriptive metrics by customer tier and language fluency and makes no causal claim.
+- `src/answering.py` drafts a reply from retrieved passages through the configured model provider; it never sends replies to customers.
 - `src/guardrails.py` rejects malformed responses, insufficient evidence, ungrounded source IDs, credential-like output, and prompt-injection-like drafts.
-- `src/pipeline.py` connects classification, routing, retrieval, grounded drafting, and SQLite decision logging. It writes classification and routing rows, plus an answer-drafting row when a draft is attempted.
+- `src/pipeline.py` connects classification, routing, retrieval, grounded drafting, escalation summaries, and SQLite decision logging. It writes classification and routing rows, plus an answer-drafting or escalation-summary row when applicable.
 - `src/evaluation.py` runs an injected ticket processor over an input dataset, writes per-ticket JSONL results, and produces a metrics JSON report. `scripts/run_evaluation.py` exposes it as a command-line runner.
 - `src/retrieve.py` splits documentation articles into passages, builds or loads a persistent Chroma index, and returns source identifiers with retrieved passages.
 - `src/logging_store.py` writes auditable decisions to SQLite.
 - `src/monitoring.py` exposes Prometheus counters and latency metrics.
+- `src/dashboard.py` aggregates persisted ticket decisions and observed outcomes for the authenticated local dashboard served by `src/app.py` at `/dashboard`. It reports outcome coverage, clearly disclaims causal attribution, and identifies latency as unavailable until the pipeline persists it.
 - `scripts/verify_setup_steps_4_6.py` verifies those three setup components locally.
 
 ### Normalized ticket fields
@@ -107,13 +112,13 @@ It uses the first 20 validation tickets for decision inspection, writes
 
 ## Planned components
 
-The FastAPI application and agent review interface remain planned. The evaluation harness accepts input and output paths rather than hardcoding a dataset filename.
+The evaluation harness accepts input and output paths rather than hardcoding a dataset filename. The local agent review API is bound to loopback by the documented launch command; access requires the configured bearer token.
 
 ### Evaluation processor interface
 
 The runner loads a `NormalizedTicket` and calls a processor function that accepts that object and returns a mapping of predictions and runtime measurements. The processor receives no ground-truth labels or historical outcomes. The harness retains those separately for scoring. It continues after individual processor errors and records them in the results file.
 
-Example command once the pipeline processor exists:
+Example command for the pipeline processor:
 
 ```powershell
 python .\scripts\run_evaluation.py `
