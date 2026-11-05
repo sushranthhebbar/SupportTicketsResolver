@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -28,6 +30,11 @@ def _load_processor(specification: str) -> Callable[[NormalizedTicket], Any]:
 
 
 def main() -> int:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%H:%M:%S",
+    )
     parser = argparse.ArgumentParser(
         description="Process a ticket dataset and write per-ticket results and metrics."
     )
@@ -40,9 +47,18 @@ def main() -> int:
         help="Ticket processor as importable module:function",
     )
     parser.add_argument("--system-version", default="unspecified")
+    parser.add_argument(
+        "--model-request-interval",
+        type=float,
+        default=3.0,
+        help="Minimum seconds between model requests during evaluation (default: 3)",
+    )
     args = parser.parse_args()
 
     try:
+        if args.model_request_interval < 0:
+            parser.error("--model-request-interval must be zero or greater")
+        os.environ["MODEL_MIN_REQUEST_INTERVAL_SECONDS"] = str(args.model_request_interval)
         processor = _load_processor(args.processor)
         report = run_evaluation(
             args.input,

@@ -18,6 +18,18 @@ If `py -3.11` reports that no Python installation is registered, use the full pa
 
 Edit `.env` and add your model-provider key. The example uses Groq's OpenAI-compatible endpoint and `qwen/qwen3.8-27b`; replace the placeholder with your Groq API key. Keep `.env` private; it is ignored by Git. To use OpenRouter instead, set `MODEL_API_KEY`, `MODEL_API_URL`, and `MODEL_NAME` to your OpenRouter key, chat-completions URL, and chosen model. Existing `OPENROUTER_API_KEY` / `OPENROUTER_API_URL` settings remain supported as fallback configuration.
 
+Both classification and drafting retry HTTP 429 responses up to five times by
+default, honoring `Retry-After` when provided and otherwise using bounded exponential
+backoff. `MODEL_429_MAX_RETRIES` and `MODEL_429_FALLBACK_SECONDS` can tune the retry
+count and initial fallback delay. Retries help recover from temporary rate limits;
+they cannot exceed the provider's request or token quota.
+The evaluation CLI also spaces model requests by three seconds by default (about
+20 requests per minute), below the stated 30 RPM cap. Override with
+`--model-request-interval` if needed. Provider 429 logs include available request
+and token quota/reset headers to help identify which limit was reached; token limits
+can still trigger retries even with request pacing. On 429, the retry wait uses the
+longer of `Retry-After` and Groq's token-window reset timer when available.
+
 ## Run checks
 
 Run the automated, offline tests:
@@ -53,12 +65,13 @@ labels:
 python .\scripts\run_urgency_spectrum_sample.py
 ```
 
-Run the full evaluation pipeline on the supplied validation set (live model calls;
-the hidden 120-ticket evaluation set is not distributed):
+Run the full evaluation pipeline on the supplied 80-ticket validation set (live model
+calls). The separate 120-ticket assessment set will never be provided to this project,
+so local evaluation and final comparisons use the supplied validation set:
 
 ```cmd
-.venv311\Scripts\python.exe .\scripts\run_evaluation.py --input evaluation\data\validation_tickets.json --output evaluation\results\validation_2026-11-02.jsonl --processor src.pipeline:process_ticket --system-version 0.1
-.venv311\Scripts\python.exe .\scripts\verify_evaluation_artifacts.py --input evaluation\data\validation_tickets.json --results evaluation\results\validation_2026-11-02.jsonl --report evaluation\results\validation_2026-11-02.report.json
+.venv311\Scripts\python.exe .\scripts\run_evaluation.py --input evaluation\data\validation_tickets.json --output evaluation\results\validation_2026-11-02-retry.jsonl --processor src.pipeline:process_ticket --system-version 0.1
+.venv311\Scripts\python.exe .\scripts\verify_evaluation_artifacts.py --input evaluation\data\validation_tickets.json --results evaluation\results\validation_2026-11-02-retry.jsonl --report evaluation\results\validation_2026-11-02-retry.report.json
 ```
 
 The verifier checks that every input ticket appears exactly once and in order, no

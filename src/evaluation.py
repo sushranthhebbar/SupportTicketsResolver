@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import math
 import statistics
 import time
@@ -13,6 +14,7 @@ from typing import Any, Callable, Mapping
 
 from src.tickets import PROJECT_ROOT, NormalizedTicket, TicketRecord, load_ticket_records
 
+logger = logging.getLogger(__name__)
 
 TicketProcessor = Callable[[NormalizedTicket], Mapping[str, Any]]
 
@@ -290,7 +292,8 @@ def run_evaluation(
     """
     records = load_ticket_records(input_path)
     rows: list[dict[str, Any]] = []
-    for record in records:
+    total = len(records)
+    for index, record in enumerate(records, start=1):
         started = time.perf_counter()
         result: dict[str, Any] | None = None
         error: dict[str, str] | None = None
@@ -301,6 +304,22 @@ def run_evaluation(
             result = dict(processed)
         except Exception as exc:  # Keep the unattended run moving per A11.
             error = {"type": type(exc).__name__, "message": str(exc)}
+            logger.warning(
+                "Evaluation progress: %d/%d tickets; %s failed (%s: %s).",
+                index,
+                total,
+                record.ticket.ticket_id,
+                type(exc).__name__,
+                exc,
+            )
+        else:
+            logger.info(
+                "Evaluation progress: %d/%d tickets; %s complete (%.1f seconds).",
+                index,
+                total,
+                record.ticket.ticket_id,
+                time.perf_counter() - started,
+            )
         elapsed = time.perf_counter() - started
         if result is not None:
             result.setdefault("latency_seconds", elapsed)

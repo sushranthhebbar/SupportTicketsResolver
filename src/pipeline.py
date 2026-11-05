@@ -162,7 +162,7 @@ def process_ticket(
                 "action_taken": answer_result.get("action", "review"),
                 "reason": str(answer_result.get("reason") or "No answer reason supplied."),
                 "guardrail_results": answer_result.get("guardrail_results", {}),
-                "prompt_version": answer_result.get("prompt_version", "PR-02-v1"),
+                "prompt_version": answer_result.get("prompt_version", "PR-02-v2"),
                 "requirement_ids": ["FR-03", "FR-04", "FR-05", "FR-07", "B-08", "B-09"],
             },
             database_url,

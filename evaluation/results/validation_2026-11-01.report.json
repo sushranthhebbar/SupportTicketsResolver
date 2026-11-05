@@ -1,0 +1,152 @@
+{
+  "run_info": {
+    "run_at_utc": "2026-11-01T11:31:00.745069+00:00",
+    "system_version": "0.1",
+    "tickets_in_input": 80,
+    "tickets_processed": 6,
+    "processing_errors": 74,
+    "input_path": "C:\\Users\\sushr\\OneDrive\\Documents\\SupportTicketsResolver\\evaluation\\data\\validation_tickets.json",
+    "results_path": "C:\\Users\\sushr\\OneDrive\\Documents\\SupportTicketsResolver\\evaluation\\results\\validation_2026-11-01.jsonl",
+    "report_path": "C:\\Users\\sushr\\OneDrive\\Documents\\SupportTicketsResolver\\evaluation\\results\\validation_2026-11-01.report.json"
+  },
+  "volume": {
+    "actions": {
+      "escalate": 2,
+      "review": 4
+    },
+    "blocked_by_guardrails": 0
+  },
+  "business": {
+    "historical_baseline": {
+      "first_contact_resolution_rate": 0.4625,
+      "escalation_rate": 0.5375,
+      "repeat_contact_rate": 0.2125,
+      "mean_resolution_time_minutes": 441.475,
+      "mean_satisfaction_rating": 2.6,
+      "first_response_time": null,
+      "first_response_time_note": "The supplied ticket records do not contain first-response timestamps."
+    },
+    "system_first_contact_resolution": null,
+    "system_satisfaction": null,
+    "note": "System business outcomes require observed customer or agent outcomes; they are not inferred from historical labels."
+  },
+  "technical": {
+    "intent_classification": {
+      "per_class": {
+        "account_access": {
+          "precision": 0.5,
+          "recall": 1.0,
+          "support": 1
+        },
+        "api_key_issue": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 1
+        },
+        "data_export": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 1
+        },
+        "deployment_failure": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 2
+        },
+        "webhook_issue": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 1
+        }
+      },
+      "macro_precision": 0.7,
+      "macro_recall": 0.8,
+      "scored_tickets": 6,
+      "excluded_processing_errors": 74
+    },
+    "urgency_classification": {
+      "per_class": {
+        "high": {
+          "precision": 0.5,
+          "recall": 1.0,
+          "support": 1
+        },
+        "low": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 3
+        },
+        "medium": {
+          "precision": 0.25,
+          "recall": 0.5,
+          "support": 2
+        }
+      },
+      "macro_precision": 0.25,
+      "macro_recall": 0.5,
+      "scored_tickets": 6,
+      "excluded_processing_errors": 74
+    },
+    "routing_accuracy": 0.0,
+    "routing_scored_tickets": 6,
+    "routing_excluded_processing_errors": 74,
+    "retrieval_hit_rate_on_answerable_tickets": 0.6,
+    "retrieval_hit_count": 3,
+    "retrieval_eligible_count": 5,
+    "citation_document_match_rate": null,
+    "citation_document_match_note": "Document-ID match is a proxy; sentence-level citation support requires human review.",
+    "latency_seconds": {
+      "median": 2.1950732999830507,
+      "p95": 4.088337299996056,
+      "measured_tickets": 74
+    }
+  },
+  "governance": {
+    "must_not_auto_respond_violations": 0,
+    "private_data_detections_reported_by_processor": 0,
+    "urgency_label_conflicts": {
+      "conflicting_duplicate_text_groups": 3,
+      "tickets_in_conflicting_groups": 7,
+      "groups": [
+        {
+          "ticket_ids": [
+            "VAL-0013",
+            "VAL-0040",
+            "VAL-0041"
+          ],
+          "urgency_labels": [
+            "high",
+            "medium"
+          ]
+        },
+        {
+          "ticket_ids": [
+            "VAL-0042",
+            "VAL-0069"
+          ],
+          "urgency_labels": [
+            "low",
+            "medium"
+          ]
+        },
+        {
+          "ticket_ids": [
+            "VAL-0044",
+            "VAL-0053"
+          ],
+          "urgency_labels": [
+            "high",
+            "low"
+          ]
+        }
+      ],
+      "note": "Ground-truth label conflicts are reported without changing labels. Interpret urgency metrics with this data-quality signal; ambiguous runtime cases should be sent for human review."
+    },
+    "hallucination_rate": null,
+    "hallucination_rate_note": "Requires human review of generated responses.",
+    "confidence_calibration": null,
+    "confidence_calibration_note": "Requires a calibrated confidence output and a defined calibration method.",
+    "decision_log_reconciliation": null,
+    "decision_log_note": "Requires connection to the persistent decision log."
+  }
+}

@@ -43,6 +43,8 @@ class _Response:
     def __init__(self, content=None, status=200):
         self.content = content
         self.status = status
+        self.status_code = status
+        self.headers = {"Retry-After": "0"}
 
     def raise_for_status(self):
         if self.status >= 400:
@@ -124,6 +126,28 @@ def test_grounded_draft_requires_retrieved_inline_citations():
     assert bad_citation["answer"] == ""
 
 
+def test_citation_metadata_is_reconciled_only_from_retrieved_inline_ids():
+    reconciled = _call(
+        _payload(citations=["DOC-OTHER-001"])
+    )
+    assert reconciled["answer_status"] == "draft_ready"
+    assert reconciled["citations"] == ["DOC-HELP-001"]
+    assert reconciled["guardrail_results"]["citation_validation"]["metadata_reconciled"] is True
+
+    unknown_inline = _call(
+        _payload(
+            draft="Create a key [DOC-NOT-RETRIEVED].",
+            citations=["DOC-HELP-001"],
+        )
+    )
+    assert unknown_inline["answer_status"] == "needs_human"
+    assert unknown_inline["answer"] == ""
+
+    no_inline = _call(_payload(draft="Create a key in account settings."))
+    assert no_inline["answer_status"] == "needs_human"
+    assert no_inline["answer"] == ""
+
+
 def test_unsafe_credential_like_answer_is_blocked():
     result = _call(
         _payload(draft="Use this key: sk-abcdefghijklmnop123 [DOC-HELP-001].")
@@ -175,7 +199,7 @@ def test_pipeline_logs_grounded_draft_and_sources(tmp_path):
         "recommended_next_step": "agent_review",
         "action": "draft_ready",
         "guardrail_results": {"citation_validation": {"passed": True}},
-        "prompt_version": "PR-02-v1",
+        "prompt_version": "PR-02-v2",
         "model_name": "test-answerer",
     }
     result = process_ticket(

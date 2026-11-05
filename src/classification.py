@@ -9,7 +9,12 @@ from typing import Any, Mapping
 import requests
 from dotenv import load_dotenv
 
-from src.model_provider import resolve_api_key, resolve_api_url
+from src.model_provider import (
+    has_configured_api_key,
+    post_with_rate_limit_retry,
+    resolve_api_key,
+    resolve_api_url,
+)
 from src.tickets import NormalizedTicket, PROJECT_ROOT
 
 
@@ -100,8 +105,8 @@ def classify_ticket(
     """
     key = resolve_api_key(api_key)
     model_name = model or os.getenv("MODEL_NAME")
-    if not key or key == "your_key_here":
-        raise RuntimeError("OPENROUTER_API_KEY is missing from the project .env file")
+    if not has_configured_api_key(key):
+        raise RuntimeError("MODEL_API_KEY (or a supported legacy provider key) is missing from the project .env file")
     if not model_name:
         raise RuntimeError("MODEL_NAME is missing from the project .env file")
 
@@ -119,7 +124,8 @@ def classify_ticket(
         "limited scope, a workaround, or no evidence of immediate/irreversible harm. "
         "Low means no current material harm or consequential near-term deadline, such "
         "as routine questions, planned work, feature requests, or minor issues. The "
-        "word urgent alone is not enough: if impact/timing is unclear, use medium and "
+        "word urgent alone is not enough: "
+        "if impact/timing is unclear, use medium and "
         "lower confidence. Do not use customer tier, expected route, or historical "
         "outcome as a proxy. If urgency cannot be distinguished from ticket evidence, "
         "or the text contains competing urgency signals, set urgency_ambiguous true "
@@ -130,7 +136,8 @@ def classify_ticket(
         "context only. Ticket JSON follows:\n"
         + json.dumps(_ticket_payload(ticket), ensure_ascii=False)
     )
-    response = requester.post(
+    response = post_with_rate_limit_retry(
+        requester,
         resolve_api_url(endpoint),
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
         json={

@@ -36,7 +36,7 @@ def safe_answer_failure(
         "guardrail_results": {
             reason_code: {"passed": False, "reason": reason}
         },
-        "prompt_version": "PR-02-v1",
+        "prompt_version": "PR-02-v2",
     }
 
 
@@ -72,13 +72,13 @@ def validate_grounded_answer(
             "guardrail_results": {
                 "evidence_sufficiency": {"passed": False, "reason": reason}
             },
-            "prompt_version": "PR-02-v1",
+            "prompt_version": "PR-02-v2",
         }
 
     if not draft.strip():
         return safe_answer_failure("malformed_output", "Provider marked evidence sufficient but returned no draft.")
-    if not citations or any(not isinstance(citation, str) or not citation for citation in citations):
-        return safe_answer_failure("citation_validation", "A grounded reply must cite at least one retrieved source.")
+    if any(not isinstance(citation, str) or not citation for citation in citations):
+        return safe_answer_failure("malformed_output", "Citation entries must be non-empty source ID strings.")
 
     allowed_ids = {
         source.get("doc_id")
@@ -87,18 +87,30 @@ def validate_grounded_answer(
         and isinstance(source.get("doc_id"), str)
         and source.get("doc_id")
     }
-    cited_ids = set(citations)
     inline_ids = set(INLINE_CITATION_RE.findall(draft))
-    if not cited_ids <= allowed_ids:
+    if not inline_ids:
         return safe_answer_failure(
+            "citation_validation",
+            "A grounded reply must cite at least one retrieved source inline.",
+        )
+    if not inline_ids <= allowed_ids:
+        failure = safe_answer_failure(
             "citation_validation",
             "The draft cites a source that was not retrieved for this ticket.",
         )
-    if cited_ids != inline_ids:
-        return safe_answer_failure(
-            "citation_validation",
-            "Inline source IDs and the structured citation list do not match.",
+        failure["guardrail_results"]["citation_validation"].update(
+            {
+                "structured_source_ids": sorted(set(citations)),
+                "inline_source_ids": sorted(inline_ids),
+            }
         )
+        return failure
+
+    # Inline citations are customer-visible evidence references. Validate them
+    # against retrieval, then derive the redundant structured list from them so
+    # provider disagreement cannot discard an otherwise safely cited draft.
+    citation_metadata_reconciled = set(citations) != inline_ids
+    cited_ids = inline_ids
 
     if PROMPT_INJECTION_RE.search(draft) or any(
         pattern.search(draft) for pattern in SECRET_VALUE_PATTERNS
@@ -118,8 +130,12 @@ def validate_grounded_answer(
         "action": "draft_ready",
         "guardrail_results": {
             "evidence_sufficiency": {"passed": True},
-            "citation_validation": {"passed": True, "source_ids": sorted(cited_ids)},
+            "citation_validation": {
+                "passed": True,
+                "source_ids": sorted(cited_ids),
+                "metadata_reconciled": citation_metadata_reconciled,
+            },
             "unsafe_content": {"passed": True},
         },
-        "prompt_version": "PR-02-v1",
+        "prompt_version": "PR-02-v2",
     }
