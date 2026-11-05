@@ -77,7 +77,16 @@ set). Generate predictions for that split, mark each field correct/incorrect aga
 its label, fit an isotonic regression mapping from raw score to observed correctness,
 and check reliability bins, Brier score, and per-class precision on separate held-out
 data. Version and retain the calibration artifact with the model and prompt version.
-Do not fit or adjust thresholds against the final evaluation set. Until calibrated
+Do not fit or adjust thresholds against the final evaluation set. `src/calibration.py` implements this (pure-Python
+pool-adjacent-violators isotonic fit with a conservative step lookup: a score between
+fitted blocks takes the lower block's value). `scripts/collect_calibration_predictions.py`
+gathers classifier output on development tickets, excluding prompt-tuning tickets and
+any ticket sharing their text; `scripts/fit_calibration.py` splits by hash of the
+normalized text so duplicate texts never straddle fit and held-out sets, and records
+fit/held-out ticket IDs, model, prompt version, and metrics in the artifact. The
+artifact is activated only by setting `CALIBRATION_ARTIFACT`; the pipeline applies it
+only when the classification's model and prompt version match, and records
+`calibration_version` in the routing result. Until calibrated
 scores are explicitly provided, non-urgent, non-security tickets route to human
 review. The default auto-response threshold is 0.80 for both calibrated intent and
 urgency confidence; review or adjust it only using held-out precision results against

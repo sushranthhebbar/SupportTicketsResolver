@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Callable, Mapping, Sequence
 
+from src.calibration import configured_artifact
 from src.classification import classify_ticket
 from src.escalation import build_escalation_summary
 from src.logging_store import log_decision
@@ -36,11 +37,19 @@ def process_ticket(
     review result rather than aborting the evaluation batch.
     """
     classification = dict(classifier(ticket))
+    calibration_version = None
+    if calibrated_confidence is None:
+        artifact = configured_artifact()
+        if artifact is not None:
+            calibrated_confidence = artifact.calibrate(classification)
+            if calibrated_confidence is not None:
+                calibration_version = artifact.version
     routing = route_ticket(
         classification,
         calibrated_confidence=calibrated_confidence,
         min_confidence=min_confidence,
     )
+    routing["calibration_version"] = calibration_version
     retrieved_sources: list[Mapping[str, Any]] = []
     answer_result: dict[str, Any] | None = None
     escalation_summary: dict[str, Any] | None = None

@@ -199,3 +199,17 @@ User manually ran `tests/test_evaluation.py` and confirmed all tests passed. The
 - The user confirmed the hidden 120-ticket assessment set will never be provided to this project. Treat this as permanently inaccessible, not pending.
 - Use the 500 supplied development tickets for prompt/policy exploration and the supplied 80-ticket validation set for final local comparisons. Do not tune changes against the validation set. Make no hidden-set run claims; describe it as externally assessed but unavailable for local reproduction.
 
+
+## Confidence calibration implementation (2026-11-05)
+
+- Added `src/calibration.py`, `scripts/collect_calibration_predictions.py`, `scripts/fit_calibration.py`, `tests/test_calibration.py`, and pipeline wiring (`CALIBRATION_ARTIFACT`, explicit opt-in; version-matched; `calibration_version` in routing output). Offline tests pass (46 passed in a scratch Python 3.9 venv, excluding three modules that need chromadb/pytest-asyncio; the full suite still needs a run in `.venv311`).
+- **Calibration has not been run on real data.** The implementation was developed in a checkout without `.env`/provider key, so no live predictions exist yet and no calibration artifact has been produced. The fit script was smoke-tested only on synthetic predictions (not committed). Do not claim calibrated metrics until the collection and fit steps are run with the Groq key.
+- Expected constraint: urgency accuracy is ~45% against noisy labels, so calibrated urgency confidence may never reach 0.80 and auto-response may stay disabled. If so, report that honestly rather than lowering the threshold; the threshold must be chosen from held-out precision (target >= 85% per class), never the validation set.
+
+## Confidence calibration results (2026-11-05)
+
+- Collected live PR-03-v2 predictions (`qwen/qwen3.8-27b`, Groq) for the whole eligible development pool: 343 attempted, 341 classified (errors: DEV-0114 HTTP 400; DEV-0487 non-boolean `urgency_ambiguous`). Artifact `evaluation/calibration/calibration-v1.json` fitted on 251 tickets, evaluated on 90 held-out tickets (hash split by text). Validation tickets were not used.
+- Fix during fitting: isotonic blocks with fewer than 10 observations are pooled into a neighbor (a single-ticket 0.98 urgency block had calibrated to 1.0).
+- Held-out intent: accuracy 84.4%, Brier 0.140 raw -> 0.128 calibrated; calibrated values 0.83 (raw 0.65-0.95) and 0.94 (raw 0.98). Precision at the 0.80 threshold is 84.4% (n=90), below the 85% target; per-class precision is not demonstrable (19 predicted classes, only 2 with >= 10 selections).
+- Held-out urgency: accuracy 55.6%, Brier 0.317 -> 0.260. Calibrated urgency never exceeds 0.66, so no ticket reaches the 0.80 threshold: **auto-response stays disabled**. The model's raw urgency confidence (0.85-0.95) was overconfident; calibration corrects this.
+- The artifact has NOT been activated (`CALIBRATION_ARTIFACT` unset). Activating it would not change routing today. The 0.80 threshold was left unchanged. Next lever for auto-response is urgency quality, not the threshold.

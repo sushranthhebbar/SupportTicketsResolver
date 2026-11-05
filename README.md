@@ -30,6 +30,25 @@ and token quota/reset headers to help identify which limit was reached; token li
 can still trigger retries even with request pacing. On 429, the retry wait uses the
 longer of `Retry-After` and Groq's token-window reset timer when available.
 
+## Confidence calibration
+
+Raw model confidence is not used for routing. Calibrate it from development data only
+(prompt-tuning tickets and all validation tickets are excluded). Collection is
+resumable, so it can span several days to stay within provider token quotas
+(classification-only, roughly 700 tokens per ticket):
+
+```cmd
+.venv311\Scripts\python.exe .\scripts\collect_calibration_predictions.py --max-tickets 100
+.venv311\Scripts\python.exe .\scripts\fit_calibration.py
+```
+
+`fit_calibration.py` fits isotonic calibrators on the fit split, reports Brier score,
+reliability bins, and per-class precision on the held-out split, and writes
+`evaluation/calibration/calibration-v1.json`. The artifact is **not** active until you
+review those results and set `CALIBRATION_ARTIFACT=evaluation/calibration/calibration-v1.json`
+in `.env`. It applies only to predictions from the same model and prompt version it was
+fitted for; otherwise tickets stay in human review.
+
 ## Run checks
 
 Run the automated, offline tests:
