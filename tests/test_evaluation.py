@@ -155,3 +155,30 @@ def test_run_evaluation_records_ticket_errors_and_continues(tmp_path):
     assert report["run_info"]["processing_errors"] == 1
     assert output_rows[0]["error"]["type"] == "RuntimeError"
     assert output_rows[1]["result"]["route"] == "escalate"
+
+
+def test_urgency_noise_analysis_reports_ceiling_and_adjacent_accuracy():
+    from src.evaluation import _urgency_noise_analysis
+    from src.tickets import load_ticket_records
+    import tempfile, pathlib
+
+    def rec(i, body, urgency):
+        r = _record(f"T-{i}", intent="onboarding", urgency=urgency, route="auto_respond",
+                    answerable=True, doc_ids=[], fcr=True)
+        r["body"] = body
+        return r
+
+    data = [rec(1, "same text", "low"), rec(2, "same text", "medium"), rec(3, "same text", "medium"),
+            rec(4, "unique one", "high"), rec(5, "unique two", "low")]
+    with tempfile.TemporaryDirectory() as folder:
+        path = pathlib.Path(folder) / "d.json"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        records = load_ticket_records(path)
+    guesses = ["medium", "medium", "medium", "medium", "high"]
+    rows = [{"result": {"urgency": g}, "expected": r.labels} for g, r in zip(guesses, records)]
+    out = _urgency_noise_analysis(records, rows)
+    assert out["exact_accuracy"] == 2 / 5
+    assert out["noise_ceiling_accuracy"] == (2 + 1 + 1) / 5
+    assert out["conflict_free_exact_accuracy"] == 0
+    assert out["conflicting_text_exact_accuracy"] == 2 / 3
+    assert out["within_one_level_accuracy"] == 4 / 5

@@ -164,6 +164,64 @@ def _urgency_label_conflicts(records: list[TicketRecord]) -> dict[str, Any]:
     }
 
 
+URGENCY_ORDER = {"low": 0, "medium": 1, "high": 2}
+
+
+def _urgency_noise_analysis(
+    records: list[TicketRecord], rows: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Urgency accuracy interpreted against label noise on repeated ticket text.
+
+    Identical texts carry different urgency labels (plausibly because urgency depends
+    on customer context that is not in the ticket), so no text-only predictor can match
+    every label. ``ceiling`` is the best accuracy one fixed prediction per distinct text
+    could reach; tickets whose text is unique count as attainable. Labels are unchanged.
+    """
+    groups: dict[str, list[int]] = {}
+    for index, record in enumerate(records):
+        key = " ".join(f"{record.ticket.subject} {record.ticket.body}".casefold().split())
+        groups.setdefault(key, []).append(index)
+    scored = {i for i, row in enumerate(rows) if row["result"] is not None}
+    exact = adjacent = ceiling_hits = 0
+    free = {"n": 0, "exact": 0}
+    conflicted = {"n": 0, "exact": 0}
+    abs_errors: list[int] = []
+    for members in groups.values():
+        members = [i for i in members if i in scored]
+        if not members:
+            continue
+        labels = [records[i].labels.get("urgency") for i in members]
+        conflict = len(set(labels)) > 1
+        ceiling_hits += max(labels.count(label) for label in set(labels))
+        for i, label in zip(members, labels):
+            guess = rows[i]["result"].get("urgency")
+            hit = guess == label
+            exact += hit
+            bucket = conflicted if conflict else free
+            bucket["n"] += 1
+            bucket["exact"] += hit
+            if guess in URGENCY_ORDER and label in URGENCY_ORDER:
+                gap = abs(URGENCY_ORDER[guess] - URGENCY_ORDER[label])
+                abs_errors.append(gap)
+                adjacent += gap <= 1
+    total = len(scored)
+    return {
+        "scored_tickets": total,
+        "exact_accuracy": _rate(exact, total),
+        "within_one_level_accuracy": _rate(adjacent, len(abs_errors)),
+        "mean_absolute_level_error": statistics.mean(abs_errors) if abs_errors else None,
+        "noise_ceiling_accuracy": _rate(ceiling_hits, total),
+        "conflict_free_tickets": free["n"],
+        "conflict_free_exact_accuracy": _rate(free["exact"], free["n"]),
+        "conflicting_text_tickets": conflicted["n"],
+        "conflicting_text_exact_accuracy": _rate(conflicted["exact"], conflicted["n"]),
+        "note": (
+            "Urgency is advisory (agent prioritisation only). Exact match is bounded by "
+            "noise_ceiling_accuracy; within_one_level counts low/medium and medium/high as near misses."
+        ),
+    }
+
+
 def build_metrics(
     records: list[TicketRecord], rows: list[dict[str, Any]], system_version: str
 ) -> dict[str, Any]:
@@ -248,6 +306,7 @@ def build_metrics(
         "technical": {
             "intent_classification": _classification_metrics(rows, "intent", "intent"),
             "urgency_classification": _classification_metrics(rows, "urgency", "urgency"),
+            "urgency_noise_analysis": _urgency_noise_analysis(records, rows),
             "routing_accuracy": _rate(route_matches, route_count),
             "routing_scored_tickets": route_count,
             "routing_accuracy_review_counts_as_human": _rate(human_matches, route_count),

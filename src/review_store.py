@@ -100,7 +100,37 @@ def _review_state(connection: sqlite3.Connection, decision_id: str) -> sqlite3.R
     ).fetchone()
 
 
-def _view(draft: Mapping[str, Any], state: sqlite3.Row | None) -> dict[str, Any]:
+URGENCY_RANK = {"high": 0, "medium": 1, "low": 2}
+
+
+def _advisory_urgency(connection: sqlite3.Connection, ticket_id: str) -> dict[str, Any] | None:
+    """Latest logged urgency for the ticket; shown to agents for prioritisation only."""
+    row = connection.execute(
+        """SELECT prediction_value FROM decisions
+           WHERE ticket_id=? AND stage='classification' ORDER BY timestamp DESC, rowid DESC LIMIT 1""",
+        (ticket_id,),
+    ).fetchone()
+    if row is None:
+        return None
+    try:
+        data = json.loads(row["prediction_value"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict) or data.get("urgency") not in URGENCY_RANK:
+        return None
+    return {
+        "label": data["urgency"],
+        "confidence": data.get("urgency_confidence"),
+        "evidence": data.get("urgency_evidence"),
+        "ambiguous": data.get("urgency_ambiguous"),
+    }
+
+
+def _view(
+    draft: Mapping[str, Any],
+    state: sqlite3.Row | None,
+    advisory_urgency: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     status = state["status"] if state else "pending"
     current_draft = state["current_draft"] if state else draft["draft"]
     citations = sorted(set(INLINE_CITATION_RE.findall(current_draft)))
@@ -108,6 +138,7 @@ def _view(draft: Mapping[str, Any], state: sqlite3.Row | None) -> dict[str, Any]
         "decision_id": draft["decision_id"],
         "ticket_id": draft["ticket_id"],
         "ticket_context": draft["ticket_context"],
+        "advisory_urgency": dict(advisory_urgency) if advisory_urgency else None,
         "status": status,
         "draft": current_draft,
         "was_edited": current_draft != draft["draft"],
@@ -134,7 +165,11 @@ def _all_drafts(database_url: str | None = None) -> list[dict[str, Any]]:
                 draft = _decode_prediction(row)
             except ReviewNotFound:
                 continue
-            result.append(_view(draft, _review_state(connection, draft["decision_id"])))
+            result.append(_view(
+                draft,
+                _review_state(connection, draft["decision_id"]),
+                _advisory_urgency(connection, draft["ticket_id"]),
+            ))
         return result
 
 
@@ -144,14 +179,23 @@ def list_review_drafts(
     if status not in {"pending", "approved", "rejected", "all"}:
         raise ReviewValidationError("status must be pending, approved, rejected, or all")
     drafts = _all_drafts(database_url)
-    return drafts if status == "all" else [draft for draft in drafts if draft["status"] == status]
+    if status != "all":
+        drafts = [draft for draft in drafts if draft["status"] == status]
+    # Prioritisation only: most urgent first, newest first within a level (stable sort).
+    return sorted(
+        drafts,
+        key=lambda d: URGENCY_RANK.get((d["advisory_urgency"] or {}).get("label"), len(URGENCY_RANK)),
+    )
 
 
 def get_review_draft(decision_id: str, database_url: str | None = None) -> dict[str, Any]:
     with closing(connect(database_url)) as connection:
         connection.execute(REVIEW_SCHEMA)
         draft = _read_draft(connection, decision_id)
-        return _view(draft, _review_state(connection, decision_id))
+        return _view(
+            draft, _review_state(connection, decision_id),
+            _advisory_urgency(connection, draft["ticket_id"]),
+        )
 
 
 def get_ticket_decision_history(

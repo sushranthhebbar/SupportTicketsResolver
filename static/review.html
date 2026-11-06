@@ -41,7 +41,7 @@
       <h2 id="ticket-title">Choose a draft</h2>
       <p id="notice" class="muted">Agent approval prepares a reviewed response. This tool does not send messages.</p>
       <div id="details" hidden>
-        <h3>Ticket context</h3><p><strong id="channel"></strong></p><p id="subject"></p><p id="ticket-body"></p>
+        <h3>Ticket context</h3><p><strong id="channel"></strong></p><p id="urgency"></p><p id="subject"></p><p id="ticket-body"></p>
         <h3>Retrieved sources</h3><ul id="sources" class="sources"></ul>
         <h3>Decision history for this ticket</h3><ol id="history"></ol>
         <h3>Customer disclosure</h3><p id="disclosure" class="disclosure"></p>
@@ -94,6 +94,10 @@
         $("ticket-title").textContent = `Ticket ${draft.ticket_id} · ${draft.status}`;
         const context = draft.ticket_context || {};
         $("channel").textContent = context.channel ? `Channel: ${context.channel}` : "";
+        const urgency = draft.advisory_urgency;
+        $("urgency").textContent = urgency
+          ? `Suggested urgency (advisory, for prioritisation only): ${urgency.label}${urgency.ambiguous ? " · model flagged as ambiguous" : ""}${urgency.evidence ? ` · evidence: "${urgency.evidence}"` : ""}`
+          : "Suggested urgency: unavailable";
         $("subject").textContent = context.subject ? `Subject: ${context.subject}` : "Ticket subject unavailable for this older draft.";
         $("ticket-body").textContent = context.body || "Ticket body unavailable for this older draft.";
         $("draft").value = draft.draft;
@@ -154,7 +158,7 @@
           if (!drafts.length) { const option = document.createElement("option"); option.textContent = "No pending drafts"; option.value = ""; $("queue").append(option); }
           for (const draft of drafts) {
             const option = document.createElement("option"); option.value = draft.decision_id;
-            option.textContent = `${draft.ticket_id}${draft.was_edited ? " · edited" : ""}`; $("queue").append(option);
+            option.textContent = `${draft.advisory_urgency ? `[${draft.advisory_urgency.label}] ` : ""}${draft.ticket_id}${draft.was_edited ? " · edited" : ""}`; $("queue").append(option);
           }
           message(`Loaded ${drafts.length} pending draft(s).`, "success");
           if (drafts.length) { $("queue").value = drafts[0].decision_id; showDraft(drafts[0]); await loadTicketInfo(drafts[0].ticket_id); }
