@@ -33,6 +33,58 @@ INTENT_LABELS = frozenset(
 )
 URGENCY_LABELS = frozenset({"low", "medium", "high"})
 CLASSIFIER_PROMPT_VERSION = "PR-03-v2"
+SUPPORTED_PROMPT_VERSIONS = frozenset({"PR-03-v2", "PR-03-v4"})
+# PR-03-v4 is PR-03-v2 plus these intent definitions and tie-break rules (urgency text
+# unchanged). It stays an experiment until it passes the criteria in
+# docs/development_error_analysis.md (H1); the runtime default remains PR-03-v2.
+INTENT_DEFINITIONS = (
+    "Intent definitions (choose the intent naming the customer's primary request or the "
+    "capability that is failing): "
+    "account_access = a person cannot log in, is locked out, or needs a user account or its "
+    "access recovered, added, removed or changed; "
+    "api_key_issue = creating, rotating, revoking, scoping or losing API keys, or a key that "
+    "stopped working; "
+    "api_usage_question = how to call an API correctly (parameters, pagination, behaviour) "
+    "with no failure or limit involved; "
+    "authentication_failure = requests or logins rejected (401/403, token or credential "
+    "errors) although the credentials should be valid; "
+    "billing_query = invoices, charges, pricing, payments or an unexpected bill; "
+    "compliance_request = audit evidence, attestations, certifications, access/audit logs "
+    "shown to an auditor, retention or legal/regulatory documentation; "
+    "configuration_help = how to set up or change settings of a service already in use; "
+    "data_export = extracting or downloading the customer's own data in bulk; "
+    "data_residency = where data is physically stored or processed, region or location "
+    "requirements; "
+    "database_issue = failures of the managed database itself (connections, replication, "
+    "corruption, restore, locks); "
+    "deployment_failure = builds or deployments fail or hang; "
+    "feature_request = asks for a capability that does not exist; "
+    "integration_help = connecting or forwarding data to an external system (CI, log "
+    "forwarding, monitoring, third-party tools) that is not working or being set up; "
+    "onboarding = a new customer or team getting started or migrating to the platform; "
+    "performance_degradation = the service works but is slow, latency or throughput has "
+    "worsened, or resources are exhausted; "
+    "quota_or_overage = hitting plan limits or spend caps, throttling caused by a quota, or "
+    "overage terms; "
+    "rate_limit = HTTP 429 or request-rate limits on the API; "
+    "rollback_request = reverting to a previous version, deployment or configuration; "
+    "security_incident = suspected or confirmed unauthorized access, exposed or leaked "
+    "credentials or keys, data exposure, or an active attack; "
+    "sso_configuration = SAML/OIDC/SCIM setup, or SSO login and provisioning problems; "
+    "unclear_request = no actionable detail, a bare follow-up, or nothing that fits another "
+    "intent; "
+    "webhook_issue = webhook delivery, retries, duplicates, signatures or endpoint failures. "
+    "Tie-breaks: a failure to forward or sync data to an external system is "
+    "integration_help, unless it is specifically about webhook delivery (webhook_issue); a "
+    "request for evidence shown to an auditor is compliance_request even if it needs an "
+    "export, whereas a request to download one's data for its own sake is data_export; a "
+    "rejected key or token is authentication_failure, key management is api_key_issue, and a "
+    "key that may have been exposed or misused is security_incident; connection exhaustion "
+    "or errors are database_issue, while slowness is performance_degradation; first-time "
+    "setup or migration planning is onboarding, while changing settings of a live service is "
+    "configuration_help; hitting a limit or cap is quota_or_overage, while a question about "
+    "an amount charged is billing_query. "
+)
 
 
 def _confidence(value: Any, field: str) -> float:
@@ -45,7 +97,10 @@ def _confidence(value: Any, field: str) -> float:
 
 
 def validate_classification(
-    value: Mapping[str, Any], *, ticket: NormalizedTicket | None = None
+    value: Mapping[str, Any],
+    *,
+    ticket: NormalizedTicket | None = None,
+    prompt_version: str = CLASSIFIER_PROMPT_VERSION,
 ) -> dict[str, Any]:
     """Validate model-produced labels, evidence, ambiguity, and raw scores.
 
@@ -82,7 +137,7 @@ def validate_classification(
         "urgency_ambiguous": ambiguous,
         "model_name": value.get("model_name"),
         "model_version": value.get("model_version"),
-        "prompt_version": CLASSIFIER_PROMPT_VERSION,
+        "prompt_version": prompt_version,
     }
 
 
@@ -97,12 +152,15 @@ def classify_ticket(
     api_key: str | None = None,
     endpoint: str | None = None,
     requester: Any = requests,
+    prompt_version: str = CLASSIFIER_PROMPT_VERSION,
 ) -> dict[str, Any]:
     """Classify one normalized ticket; the model infers urgency ambiguity itself.
 
     Evaluation-only labels and any ambiguity annotation are never sent as ticket
     input. The model returns its own ``urgency_ambiguous`` assessment.
     """
+    if prompt_version not in SUPPORTED_PROMPT_VERSIONS:
+        raise ValueError(f"Unsupported classifier prompt version: {prompt_version!r}")
     key = resolve_api_key(api_key)
     model_name = model or os.getenv("MODEL_NAME")
     if not has_configured_api_key(key):
@@ -133,7 +191,9 @@ def classify_ticket(
         "clear urgency judgment. urgency_evidence must be a short exact excerpt "
         "supporting the urgency judgment, or empty when choosing low because no "
         "impact/deadline is stated. Classify from the ticket text and "
-        "context only. Ticket JSON follows:\n"
+        "context only. "
+        + (INTENT_DEFINITIONS if prompt_version == "PR-03-v4" else "")
+        + "Ticket JSON follows:\n"
         + json.dumps(_ticket_payload(ticket), ensure_ascii=False)
     )
     response = post_with_rate_limit_retry(
@@ -158,4 +218,4 @@ def classify_ticket(
         raise ValueError("Classifier response must be a JSON object")
     parsed = dict(parsed)
     parsed["model_name"] = result.get("model", model_name)
-    return validate_classification(parsed, ticket=ticket)
+    return validate_classification(parsed, ticket=ticket, prompt_version=prompt_version)

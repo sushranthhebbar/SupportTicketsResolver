@@ -17,7 +17,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.calibration import build_artifact, save_artifact, split_for_text, text_key
+from src.calibration import build_artifact, save_artifact, text_key
+from src.scenarios import scenario_split, tuning_scenario_ids
 from src.tickets import load_ticket_records
 
 EVAL_DIR = PROJECT_ROOT / "evaluation"
@@ -28,14 +29,19 @@ def main() -> int:
     parser.add_argument("--tickets", type=Path, default=EVAL_DIR / "data" / "development_tickets.json")
     parser.add_argument("--predictions", type=Path,
                         default=EVAL_DIR / "calibration" / "development_predictions.jsonl")
-    parser.add_argument("--output", type=Path, default=EVAL_DIR / "calibration" / "calibration-v1.json")
-    parser.add_argument("--version", default="calibration-v1")
+    parser.add_argument("--output", type=Path, default=EVAL_DIR / "calibration" / "calibration-v2.json")
+    parser.add_argument("--version", default="calibration-v2")
+    parser.add_argument("--exclude-tuning-scenarios", action="store_true",
+                        help="Also drop every scenario containing a prompt-tuning ticket.")
     parser.add_argument("--threshold", type=float, default=0.80)
     args = parser.parse_args()
     if "validation" in args.tickets.name.lower():
         parser.error("Calibration must not use the validation tickets.")
 
-    labels = {r.ticket.ticket_id: r for r in load_ticket_records(args.tickets)}
+    all_records = load_ticket_records(args.tickets)
+    labels = {r.ticket.ticket_id: r for r in all_records}
+    splits = scenario_split(all_records)
+    dropped = tuning_scenario_ids(all_records) if args.exclude_tuning_scenarios else set()
     urgency_by_text: dict[str, set[str]] = {}
     for record in labels.values():
         urgency_by_text.setdefault(text_key(record.ticket.subject, record.ticket.body), set()).add(
@@ -50,9 +56,11 @@ def main() -> int:
         if pred.get("error"):
             skipped += 1
             continue
+        if pred["ticket_id"] in dropped:
+            continue
         record = labels[pred["ticket_id"]]
         key = text_key(record.ticket.subject, record.ticket.body)
-        split = split_for_text(key)
+        split = splits[pred["ticket_id"]]
         models.add(pred["model_name"])
         prompts.add(pred["prompt_version"])
         rows[split].append(

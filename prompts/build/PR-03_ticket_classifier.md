@@ -36,3 +36,9 @@ Set `urgency_ambiguous` to true and lower urgency confidence when the ticket doe
 Confidence values are raw model estimates on a 0–1 scale. They are not calibrated probabilities and must not be used directly for automatic routing. If evidence is ambiguous, choose `unclear_request` when no listed intent is a good fit and lower confidence. Do not infer facts absent from the ticket.
 
 The application validates the schema, label set, and score range. Invalid or malformed output fails the ticket safely for human review through the evaluation harness.
+
+## PR-03-v4 (experiment, not the runtime default)
+
+PR-03-v4 is PR-03-v2 with one addition: a paragraph of intent definitions and tie-break rules (`INTENT_DEFINITIONS` in `src/classification.py`), placed immediately before the ticket JSON. The urgency wording is unchanged, so differences isolate the intent change. Select it with `classify_ticket(..., prompt_version="PR-03-v4")` or `collect_calibration_predictions.py --prompt-version PR-03-v4`. The runtime default stays PR-03-v2 until the pre-registered criteria (H1 in `docs/development_error_analysis.md`) are met on the development comparison.
+
+Safety choice: an exposed or possibly misused key is defined as `security_incident` (escalated) even where development labels may call it `api_key_issue`; escalation safety is not traded for label agreement. The tie-break rules were written after reading the development error pairs, so development gains are optimistic.

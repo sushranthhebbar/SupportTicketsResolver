@@ -42,12 +42,24 @@ resumable, so it can span several days to stay within provider token quotas
 .venv311\Scripts\python.exe .\scripts\fit_calibration.py
 ```
 
-`fit_calibration.py` fits isotonic calibrators on the fit split, reports Brier score,
+`fit_calibration.py` splits by paraphrase scenario (`src/scenarios.py`, text-only clustering, so near-duplicate wordings never straddle fit and held-out) and fits isotonic calibrators on the fit split, reports Brier score,
 reliability bins, and per-class precision on the held-out split, and writes
-`evaluation/calibration/calibration-v1.json`. The artifact is **not** active until you
-review those results and set `CALIBRATION_ARTIFACT=evaluation/calibration/calibration-v1.json`
+`evaluation/calibration/calibration-v2.json` (v1 used an exact-text split that leaked paraphrases). The artifact is **not** active until you
+review those results and set `CALIBRATION_ARTIFACT=evaluation/calibration/calibration-v2.json`
 in `.env`. It applies only to predictions from the same model and prompt version it was
 fitted for; otherwise tickets stay in human review.
+
+Compare an alternative classifier prompt against the stored PR-03-v2 development
+predictions (live calls, development tickets only; about 340 calls, so it may need two
+days under the 200K-token daily Groq quota; the run resumes):
+
+```cmd
+.venv\Scripts\python.exe .\scripts\collect_calibration_predictions.py --prompt-version PR-03-v4 --include-tuning-tickets --only-ids-from evaluation\calibration\development_predictions.jsonl --output evaluation\calibration\development_predictions_pr03_v4.jsonl --max-tickets 400
+.venv\Scripts\python.exe .\scripts\compare_prompt_runs.py --candidate evaluation\calibration\development_predictions_pr03_v4.jsonl
+```
+
+The comparison prints intent and urgency accuracy, macro precision/recall/F1, per-class
+recall, paired McNemar tests, scenario-level counts, and the pre-registered H1 criteria.
 
 ## Run checks
 

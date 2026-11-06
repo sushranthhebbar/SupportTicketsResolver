@@ -216,7 +216,7 @@ def build_artifact(
         "threshold": threshold,
         "fit_ticket_ids": fit_ids,
         "holdout_ticket_ids": holdout_ids,
-        "split_rule": f"sha256(normalized subject+body) bucket < {FIT_FRACTION} -> fit, else holdout",
+        "split_rule": f"paraphrase-scenario clusters (text-only Jaccard >= 0.5); sha256(anchor text) bucket < {FIT_FRACTION} -> fit, else holdout",
         "calibrators": calibrators,
         "metrics": metrics,
         "notes": dict(notes or {}),
