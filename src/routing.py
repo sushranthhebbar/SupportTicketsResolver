@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 
 DEFAULT_MIN_CALIBRATED_CONFIDENCE = 0.80
-ROUTER_VERSION = "router-v2"
+ROUTER_VERSION = "router-v3"
 # Intents whose tickets must never be auto-answered (matches the dataset's
 # must_not_auto_respond rule); they always go to a human specialist.
 MUST_NOT_AUTO_RESPOND_INTENTS = frozenset(
@@ -23,6 +23,8 @@ def route_ticket(
 ) -> dict[str, Any]:
     """Escalate must-not-auto-respond intents and high urgency, review uncertain cases, auto-respond otherwise.
 
+    Urgency is advisory: it can escalate (high) or flag ambiguity, but its confidence
+    does not gate auto-response; calibrated urgency is not reliable on this data.
     Raw model self-reported confidence is not treated as calibrated. Until a
     validation-derived confidence mapping is supplied, the safe action is review.
     """
@@ -40,19 +42,15 @@ def route_ticket(
     elif urgency == "high":
         action, reason = "escalate", "High urgency requires immediate human attention."
     else:
-        scores = calibrated_confidence or {}
-        intent_score = scores.get("intent")
-        urgency_score = scores.get("urgency")
-        valid = all(
-            isinstance(score, (int, float)) and not isinstance(score, bool) and 0 <= score <= 1
-            for score in (intent_score, urgency_score)
-        )
-        if not valid:
-            action, reason = "review", "Calibrated confidence is unavailable; human review required."
-        elif min(intent_score, urgency_score) < min_confidence:
-            action, reason = "review", "Calibrated confidence is below the routing threshold."
+        intent_score = (calibrated_confidence or {}).get("intent")
+        if not (
+            isinstance(intent_score, (int, float)) and not isinstance(intent_score, bool) and 0 <= intent_score <= 1
+        ):
+            action, reason = "review", "Calibrated intent confidence is unavailable; human review required."
+        elif intent_score < min_confidence:
+            action, reason = "review", "Calibrated intent confidence is below the routing threshold."
         else:
-            action, reason = "auto_respond", "Both calibrated confidence scores meet the routing threshold."
+            action, reason = "auto_respond", "Calibrated intent confidence meets the routing threshold."
     return {
         "route": action,
         "action": action,

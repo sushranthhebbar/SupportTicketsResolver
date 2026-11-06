@@ -82,9 +82,14 @@ def test_routing_escalates_high_urgency_and_requires_calibration():
     assert route_ticket(_classification())["route"] == "review"
     calibrated = {"intent": 0.9, "urgency": 0.82}
     assert route_ticket(_classification(), calibrated_confidence=calibrated)["route"] == "auto_respond"
+    # Urgency confidence is advisory and does not gate auto-response; intent does.
     assert route_ticket(
-        _classification(), calibrated_confidence={"intent": 0.9, "urgency": 0.79}
+        _classification(), calibrated_confidence={"intent": 0.9, "urgency": 0.2}
+    )["route"] == "auto_respond"
+    assert route_ticket(
+        _classification(), calibrated_confidence={"intent": 0.79, "urgency": 0.99}
     )["route"] == "review"
+    assert route_ticket(_classification(), calibrated_confidence={"urgency": 0.99})["route"] == "review"
 
 
 def test_ambiguous_or_unsupported_urgency_always_routes_to_review():
