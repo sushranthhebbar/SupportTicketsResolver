@@ -113,7 +113,7 @@ environment with `.venv311\Scripts\python.exe -m pytest tests/ -v`.
 Raw model confidence is not treated as calibrated. Security, compliance,
 feature-request and unclear-request intents always escalate; other tickets stay in
 review until a calibrated intent confidence of at least 0.80 is supplied. Urgency is
-advisory only: it is returned for agent prioritisation and never changes the route.
+advisory only: it is returned for agent prioritisation and never changes the route (see `docs/urgency_and_label_noise.md`).
 
 ## Agent review API
 
