@@ -216,6 +216,17 @@ def build_metrics(
         for expected, row in zip(expected_routes, rows)
     )
 
+    # Secondary view: the dataset only has auto_respond/escalate, so a human-review
+    # outcome is credited when a human was expected (escalate) and never otherwise.
+    route_confusion: Counter[str] = Counter()
+    human_matches = 0
+    for expected, row in zip(expected_routes, rows):
+        if not isinstance(expected, str) or row["result"] is None:
+            continue
+        got = row["result"].get("route") or row["result"].get("action")
+        route_confusion[f"{expected}->{got}"] += 1
+        human_matches += got == expected or (expected == "escalate" and got == "review")
+
     return {
         "run_info": {
             "run_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -239,6 +250,8 @@ def build_metrics(
             "urgency_classification": _classification_metrics(rows, "urgency", "urgency"),
             "routing_accuracy": _rate(route_matches, route_count),
             "routing_scored_tickets": route_count,
+            "routing_accuracy_review_counts_as_human": _rate(human_matches, route_count),
+            "routing_confusion": dict(sorted(route_confusion.items())),
             "routing_excluded_processing_errors": len(rows) - successful,
             "retrieval_hit_rate_on_answerable_tickets": _rate(
                 retrieval_hits, retrieval_eligible

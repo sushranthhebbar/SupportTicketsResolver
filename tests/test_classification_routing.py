@@ -113,3 +113,14 @@ def test_pipeline_logs_classification_and_routing(tmp_path):
     )
     assert result["route"] == "auto_respond"
     assert count_decisions(database_url) == 2
+
+
+def test_must_not_auto_respond_intents_always_escalate():
+    calibrated = {"intent": 0.99, "urgency": 0.99}
+    for intent in ("security_incident", "compliance_request", "feature_request", "unclear_request"):
+        for overrides in ({}, {"urgency_ambiguous": True}, {"urgency_evidence_valid": False}):
+            result = route_ticket(
+                _classification(intent=intent, **overrides), calibrated_confidence=calibrated
+            )
+            assert result["route"] == "escalate", (intent, overrides)
+    assert route_ticket(_classification(), calibrated_confidence=calibrated)["route"] == "auto_respond"

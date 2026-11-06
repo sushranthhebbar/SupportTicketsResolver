@@ -6,7 +6,12 @@ from typing import Any, Mapping
 
 
 DEFAULT_MIN_CALIBRATED_CONFIDENCE = 0.80
-ROUTER_VERSION = "router-v1"
+ROUTER_VERSION = "router-v2"
+# Intents whose tickets must never be auto-answered (matches the dataset's
+# must_not_auto_respond rule); they always go to a human specialist.
+MUST_NOT_AUTO_RESPOND_INTENTS = frozenset(
+    {"security_incident", "compliance_request", "feature_request", "unclear_request"}
+)
 ROUTING_REQUIREMENTS = ["FR-07", "FR-09"]
 
 
@@ -16,7 +21,7 @@ def route_ticket(
     calibrated_confidence: Mapping[str, float] | None = None,
     min_confidence: float = DEFAULT_MIN_CALIBRATED_CONFIDENCE,
 ) -> dict[str, Any]:
-    """Escalate urgent/security cases, review uncertain cases, auto-respond otherwise.
+    """Escalate must-not-auto-respond intents and high urgency, review uncertain cases, auto-respond otherwise.
 
     Raw model self-reported confidence is not treated as calibrated. Until a
     validation-derived confidence mapping is supplied, the safe action is review.
@@ -25,13 +30,13 @@ def route_ticket(
         raise ValueError("min_confidence must be between 0 and 1")
     intent = classification.get("intent")
     urgency = classification.get("urgency")
-    if classification.get("urgency_ambiguous", True) or not classification.get(
+    if intent in MUST_NOT_AUTO_RESPOND_INTENTS:
+        action, reason = "escalate", f"Intent '{intent}' must never be auto-answered; specialist handling required."
+    elif classification.get("urgency_ambiguous", True) or not classification.get(
         "urgency_evidence_valid", False
     ):
         action = "review"
         reason = "Urgency is ambiguous or unsupported by ticket text; human review required."
-    elif intent == "security_incident":
-        action, reason = "escalate", "Security incidents require specialist handling."
     elif urgency == "high":
         action, reason = "escalate", "High urgency requires immediate human attention."
     else:
