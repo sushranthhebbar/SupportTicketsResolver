@@ -58,3 +58,24 @@ for the difference excludes zero.
 - Validation and hidden-test fairness: repeat this once on the final frozen run.
 - Outcome fairness (resolution, satisfaction by group): needs observed outcomes, not available.
 - Whether urgency errors differ by group in direction (over- vs under-estimating).
+
+## Follow-up: the chat and Europe intent gaps
+Both gaps trace back to a few scenarios, not to channel or region.
+
+- 49 intent errors fall in only 15 of 76 scenario clusters; the 8 worst clusters hold 37 of them.
+  The worst are the "auditor asked for access records" compliance request (7 of 8 wrong,
+  predicted `data_export`), two CI-pipeline `integration_help` scenarios (11 of 11 wrong),
+  two `api_key_issue` scenarios (9 of 10 wrong) and a connection-pool `database_issue` scenario.
+- Five of the seven compliance misclassifications happened to come from Europe, which is
+  most of the Europe gap; the same scenario text appears in several channels and regions.
+- Removing those 8 scenarios: chat 0.96 vs 0.96 (gap gone) and Europe 0.94 vs 0.97 (-3 points,
+  down from -10). Removing the worst 3 leaves chat -7 and Europe -4.
+- Not explained by text length (chat median 25 words vs 28 elsewhere), fluency or tier.
+- The one residual lead is Europe x chat (64%, n=33) against 91% for neither. With few
+  scenarios behind it, this is a lead and not a finding.
+
+Conclusion: no evidence of a channel or regional bias in the classifier. The gaps reflect
+how unevenly scenarios are spread across groups. It also means the 85.6% headline depends
+heavily on which scenarios happen to be in a sample (effective sample about 76), which is
+why the validation figure, drawn from different scenarios, may differ by several points.
+The remedy is the weak classes themselves (PR-03-v4 targets them), not a fairness fix.
