@@ -56,7 +56,8 @@ def test_escalation_pipeline_returns_and_logs_summary(tmp_path):
     sources = [{"doc_id": "DOC-DB-001", "title": "Migration recovery", "passage": "Restore a snapshot."}]
     result = process_ticket(
         _ticket(),
-        classifier=lambda _ticket: _classification(),
+        # Urgency is advisory (router-v4); escalation comes from a must-not intent.
+        classifier=lambda _ticket: {**_classification(), "intent": "security_incident"},
         database_url=database_url,
         retriever=lambda _query: sources,
         generate_answer=False,
