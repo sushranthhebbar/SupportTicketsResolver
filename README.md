@@ -110,9 +110,10 @@ ticket failed, report counts reconcile, and evaluation-only labels/history did n
 reach processor results. Run automated offline tests in the project virtual
 environment with `.venv311\Scripts\python.exe -m pytest tests/ -v`.
 
-Raw model confidence is not treated as calibrated. High urgency and security
-incidents escalate; other tickets stay in review until calibrated confidence scores
-are supplied to the routing pipeline.
+Raw model confidence is not treated as calibrated. Security, compliance,
+feature-request and unclear-request intents always escalate; other tickets stay in
+review until a calibrated intent confidence of at least 0.80 is supplied. Urgency is
+advisory only: it is returned for agent prioritisation and never changes the route.
 
 ## Agent review API
 
