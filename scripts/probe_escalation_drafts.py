@@ -128,7 +128,9 @@ def main() -> int:
         return 0
 
     from src.answering import draft_grounded_reply
-    from src.retrieve import search_documentation
+    from src.retrieve import get_vector_store, search_documentation
+
+    store = get_vector_store()  # load the index and embedding model once, not per ticket
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     errors = 0
@@ -146,7 +148,7 @@ def main() -> int:
             }
             try:
                 query = "\n".join(p for p in (ticket.subject, ticket.body) if p.strip())
-                sources = list(search_documentation(query))
+                sources = list(search_documentation(query, store=store))
                 result = draft_grounded_reply(ticket, sources)
                 retrieved = [s.get("doc_id") for s in sources]
                 failed = [k for k, v in result.get("guardrail_results", {}).items() if not v.get("passed", True)]

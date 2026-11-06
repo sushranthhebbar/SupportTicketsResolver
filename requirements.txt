@@ -8,6 +8,7 @@ langsmith==0.0.87
 
 # Vector Database & Embeddings
 chromadb==0.4.22
+posthog==2.4.2  # chromadb 0.4.22 breaks with posthog>=6 (telemetry capture() signature)
 sentence-transformers==2.2.2
 transformers==4.40.2
 huggingface_hub==0.25.2
