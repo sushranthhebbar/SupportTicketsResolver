@@ -76,8 +76,11 @@ def test_classifier_sends_only_normalized_ticket_and_parses_response():
     assert "urgency_ambiguous" in prompt.split("Ticket JSON follows:\n", 1)[0]
 
 
-def test_routing_escalates_high_urgency_and_requires_calibration():
-    assert route_ticket(_classification(urgency="high"))["route"] == "escalate"
+def test_routing_ignores_urgency_and_requires_calibration():
+    assert route_ticket(_classification(urgency="high"))["route"] == "review"
+    assert route_ticket(
+        _classification(urgency="high"), calibrated_confidence={"intent": 0.9}
+    )["route"] == "auto_respond"
     assert route_ticket(_classification(intent="security_incident"))["route"] == "escalate"
     assert route_ticket(_classification())["route"] == "review"
     calibrated = {"intent": 0.9, "urgency": 0.82}
@@ -92,19 +95,19 @@ def test_routing_escalates_high_urgency_and_requires_calibration():
     assert route_ticket(_classification(), calibrated_confidence={"urgency": 0.99})["route"] == "review"
 
 
-def test_ambiguous_or_unsupported_urgency_always_routes_to_review():
-    calibrated = {"intent": 0.99, "urgency": 0.99}
+def test_ambiguous_or_unsupported_urgency_does_not_change_route():
+    calibrated = {"intent": 0.99, "urgency": 0.1}
     assert route_ticket(
         _classification(urgency_ambiguous=True), calibrated_confidence=calibrated
-    )["route"] == "review"
+    )["route"] == "auto_respond"
     assert route_ticket(
         _classification(urgency_evidence_valid=False), calibrated_confidence=calibrated
-    )["route"] == "review"
+    )["route"] == "auto_respond"
     unsupported = validate_classification(
         _classification(urgency_evidence="The whole service is down."), ticket=_ticket()
     )
     assert unsupported["urgency_evidence_valid"] is False
-    assert route_ticket(unsupported, calibrated_confidence=calibrated)["route"] == "review"
+    assert route_ticket(unsupported, calibrated_confidence=calibrated)["route"] == "auto_respond"
 
 
 def test_pipeline_logs_classification_and_routing(tmp_path):
@@ -123,7 +126,7 @@ def test_pipeline_logs_classification_and_routing(tmp_path):
 def test_must_not_auto_respond_intents_always_escalate():
     calibrated = {"intent": 0.99, "urgency": 0.99}
     for intent in ("security_incident", "compliance_request", "feature_request", "unclear_request"):
-        for overrides in ({}, {"urgency_ambiguous": True}, {"urgency_evidence_valid": False}):
+        for overrides in ({}, {"urgency": "low"}, {"urgency_ambiguous": True}):
             result = route_ticket(
                 _classification(intent=intent, **overrides), calibrated_confidence=calibrated
             )
