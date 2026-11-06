@@ -245,3 +245,7 @@ Offline replay with calibration-v2 (not active) on stored development prediction
 ## Pointer
 
 Findings from the urgency/label-noise discussion (auto_respond meaning, repeated-text analysis, tier does not explain urgency, interpretation of 47.5%, advisory decision) are consolidated in `docs/urgency_and_label_noise.md`. Correction to earlier wording: repeated-text conflicts are not "the" noise explaining poor urgency accuracy; they cap exact accuracy near 85-89% only.
+
+
+## Accuracy uncertainty and fairness (development)
+Cluster-bootstrap intervals and a group breakdown are in `docs/accuracy_uncertainty_and_fairness.md` (script `scripts/analyze_accuracy_uncertainty.py`). Intent 85.6% has a 77-93% interval once scenario clustering is respected; urgency 47.5% (41-55%). Flagged group gaps (chat intent, docs_comment urgency, Europe intent) are leads only; no fluency or tier gap. Also: the escalation-draft probe (`scripts/probe_escalation_drafts.py`, 44 tickets) found 29 drafts on should-escalate tickets, 6 needing a person; DEV-0141 passed citation checks while misapplying docs.

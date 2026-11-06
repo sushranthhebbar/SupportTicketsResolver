@@ -1,0 +1,840 @@
+{
+  "n_tickets": 341,
+  "n_scenario_clusters": 76,
+  "bootstrap_reps": 2000,
+  "seed": 20261106,
+  "note": "95% percentile intervals from resampling scenario clusters. Development tickets only.",
+  "overall": {
+    "intent_accuracy": {
+      "description": "intent exactly matches the label",
+      "n": 341,
+      "value": 0.8563049853372434,
+      "ci95": [
+        0.7720364741641338,
+        0.9278074866310161
+      ]
+    },
+    "urgency_exact": {
+      "description": "urgency exactly matches the label",
+      "n": 341,
+      "value": 0.4750733137829912,
+      "ci95": [
+        0.40672782874617736,
+        0.5462686567164179
+      ]
+    },
+    "urgency_within_one": {
+      "description": "urgency within one level of the label",
+      "n": 341,
+      "value": 0.9560117302052786,
+      "ci95": [
+        0.927710843373494,
+        0.9794344473007712
+      ]
+    },
+    "must_not_caught": {
+      "description": "gold must-not-auto-respond tickets predicted as a must-not intent",
+      "n": 64,
+      "value": 0.875,
+      "ci95": [
+        0.65625,
+        1.0
+      ]
+    },
+    "auto_respond_rate": {
+      "description": "tickets router-v4 + calibration-v2 would auto-respond",
+      "n": 341,
+      "value": 0.8240469208211144,
+      "ci95": [
+        0.7257142857142858,
+        0.9072463768115943
+      ]
+    },
+    "unsafe_auto_rate": {
+      "description": "tickets auto-responded although the label expects escalation",
+      "n": 341,
+      "value": 0.2404692082111437,
+      "ci95": [
+        0.18487394957983194,
+        0.3
+      ]
+    }
+  },
+  "fairness": {
+    "channel": {
+      "chat": {
+        "n": 114,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 114,
+            "value": 0.7807017543859649,
+            "difference_vs_rest": -0.11357137336733902,
+            "difference_ci95": [
+              -0.22596781209221406,
+              -0.015740187288304397
+            ]
+          },
+          "urgency_exact": {
+            "n": 114,
+            "value": 0.4649122807017544,
+            "difference_vs_rest": -0.015263930751990118,
+            "difference_ci95": [
+              -0.11907085691977354,
+              0.08928571428571436
+            ]
+          },
+          "urgency_within_one": {
+            "n": 114,
+            "value": 0.9649122807017544,
+            "difference_vs_rest": 0.013370430481490114,
+            "difference_ci95": [
+              -0.033800904977375534,
+              0.062340294299057186
+            ]
+          },
+          "must_not_caught": {
+            "n": 18,
+            "value": 0.7777777777777778,
+            "difference_vs_rest": -0.13526570048309172,
+            "difference_ci95": [
+              -0.3075060532687651,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 114,
+            "value": 0.8596491228070176,
+            "difference_vs_rest": 0.053481721925960235,
+            "difference_ci95": [
+              -0.03020287612953132,
+              0.1383453763091662
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 114,
+            "value": 0.21929824561403508,
+            "difference_vs_rest": -0.03180307597186802,
+            "difference_ci95": [
+              -0.12932330827067673,
+              0.06459548466452406
+            ]
+          }
+        }
+      },
+      "docs_comment": {
+        "n": 54,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 54,
+            "value": 0.8333333333333334,
+            "difference_vs_rest": -0.027293844367015097,
+            "difference_ci95": [
+              -0.14344764237599505,
+              0.07568181818181818
+            ]
+          },
+          "urgency_exact": {
+            "n": 54,
+            "value": 0.3333333333333333,
+            "difference_vs_rest": -0.16840882694541232,
+            "difference_ci95": [
+              -0.29285714285714287,
+              -0.046095215050511174
+            ]
+          },
+          "urgency_within_one": {
+            "n": 54,
+            "value": 0.9444444444444444,
+            "difference_vs_rest": -0.01374370886566012,
+            "difference_ci95": [
+              -0.07565789473684215,
+              0.04192030990592133
+            ]
+          },
+          "must_not_caught": {
+            "n": 13,
+            "value": 0.7692307692307693,
+            "difference_vs_rest": -0.13273001508295623,
+            "difference_ci95": [
+              -0.3363636363636363,
+              0.05714285714285716
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 54,
+            "value": 0.7962962962962963,
+            "difference_vs_rest": -0.03297199638663051,
+            "difference_ci95": [
+              -0.13172043010752688,
+              0.04330343334364373
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 54,
+            "value": 0.37037037037037035,
+            "difference_vs_rest": 0.15434249580591042,
+            "difference_ci95": [
+              0.0036325895173845435,
+              0.3097118959107807
+            ]
+          }
+        }
+      },
+      "email": {
+        "n": 134,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 134,
+            "value": 0.9104477611940298,
+            "difference_vs_rest": 0.08919172254668684,
+            "difference_ci95": [
+              -0.0030372852953498564,
+              0.18565555718690363
+            ]
+          },
+          "urgency_exact": {
+            "n": 134,
+            "value": 0.5149253731343284,
+            "difference_vs_rest": 0.06565001081548782,
+            "difference_ci95": [
+              -0.05042226419128393,
+              0.18645204560697515
+            ]
+          },
+          "urgency_within_one": {
+            "n": 134,
+            "value": 0.9477611940298507,
+            "difference_vs_rest": -0.013591462974980262,
+            "difference_ci95": [
+              -0.06268646360924168,
+              0.024338624338624326
+            ]
+          },
+          "must_not_caught": {
+            "n": 26,
+            "value": 0.9615384615384616,
+            "difference_vs_rest": 0.14574898785425106,
+            "difference_ci95": [
+              0.0,
+              0.30000000000000004
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 134,
+            "value": 0.8059701492537313,
+            "difference_vs_rest": -0.02977864301680011,
+            "difference_ci95": [
+              -0.11492936235204276,
+              0.047476245029988595
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 134,
+            "value": 0.1865671641791045,
+            "difference_vs_rest": -0.08879515466147522,
+            "difference_ci95": [
+              -0.17268842268842266,
+              -0.002977239785325325
+            ]
+          }
+        }
+      },
+      "forum": {
+        "n": 39,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 39,
+            "value": 0.9230769230769231,
+            "difference_vs_rest": 0.07539480387162512,
+            "difference_ci95": [
+              -0.02085945514647214,
+              0.1653483992467043
+            ]
+          },
+          "urgency_exact": {
+            "n": 39,
+            "value": 0.5641025641025641,
+            "difference_vs_rest": 0.10052640516216677,
+            "difference_ci95": [
+              -0.08291194420226677,
+              0.2754237288135593
+            ]
+          },
+          "urgency_within_one": {
+            "n": 39,
+            "value": 0.9743589743589743,
+            "difference_vs_rest": 0.02071659025301409,
+            "difference_ci95": [
+              -0.022348816827344353,
+              0.05915492957746482
+            ]
+          },
+          "must_not_caught": {
+            "n": 7,
+            "value": 1.0,
+            "difference_vs_rest": 0.14035087719298245,
+            "difference_ci95": [
+              0.0,
+              0.38095238095238093
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 39,
+            "value": 0.8205128205128205,
+            "difference_vs_rest": -0.003990490745457653,
+            "difference_ci95": [
+              -0.1377959461761199,
+              0.10689310689310694
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 39,
+            "value": 0.3076923076923077,
+            "difference_vs_rest": 0.07590422822210904,
+            "difference_ci95": [
+              -0.07365041139875578,
+              0.24910394265232977
+            ]
+          }
+        }
+      }
+    },
+    "customer_tier": {
+      "business": {
+        "n": 110,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 110,
+            "value": 0.8090909090909091,
+            "difference_vs_rest": -0.0696969696969697,
+            "difference_ci95": [
+              -0.16561059907834097,
+              0.01632397888302306
+            ]
+          },
+          "urgency_exact": {
+            "n": 110,
+            "value": 0.4636363636363636,
+            "difference_vs_rest": -0.01688311688311689,
+            "difference_ci95": [
+              -0.12586206896551722,
+              0.09475850119124973
+            ]
+          },
+          "urgency_within_one": {
+            "n": 110,
+            "value": 0.9818181818181818,
+            "difference_vs_rest": 0.03809523809523807,
+            "difference_ci95": [
+              0.002139905548996457,
+              0.07566743511563923
+            ]
+          },
+          "must_not_caught": {
+            "n": 25,
+            "value": 0.76,
+            "difference_vs_rest": -0.18871794871794867,
+            "difference_ci95": [
+              -0.4095238095238095,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 110,
+            "value": 0.8181818181818182,
+            "difference_vs_rest": -0.008658008658008587,
+            "difference_ci95": [
+              -0.10126012601260126,
+              0.08221024258760112
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 110,
+            "value": 0.21818181818181817,
+            "difference_vs_rest": -0.0329004329004329,
+            "difference_ci95": [
+              -0.12786885245901639,
+              0.0680272108843537
+            ]
+          }
+        }
+      },
+      "enterprise": {
+        "n": 57,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 57,
+            "value": 0.8947368421052632,
+            "difference_vs_rest": 0.046145292809488536,
+            "difference_ci95": [
+              -0.034034740855811374,
+              0.13283018867924534
+            ]
+          },
+          "urgency_exact": {
+            "n": 57,
+            "value": 0.5614035087719298,
+            "difference_vs_rest": 0.10365702989869036,
+            "difference_ci95": [
+              -0.06666666666666671,
+              0.2626393570132227
+            ]
+          },
+          "urgency_within_one": {
+            "n": 57,
+            "value": 0.9473684210526315,
+            "difference_vs_rest": -0.010378057820607856,
+            "difference_ci95": [
+              -0.07654602833545954,
+              0.04137931034482756
+            ]
+          },
+          "must_not_caught": {
+            "n": 11,
+            "value": 1.0,
+            "difference_vs_rest": 0.15094339622641506,
+            "difference_ci95": [
+              0.0,
+              0.40740740740740744
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 57,
+            "value": 0.8070175438596491,
+            "difference_vs_rest": -0.020447244872745296,
+            "difference_ci95": [
+              -0.1313844086021505,
+              0.08712121212121204
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 57,
+            "value": 0.22807017543859648,
+            "difference_vs_rest": -0.01488757104027677,
+            "difference_ci95": [
+              -0.13608231471452886,
+              0.11415282392026577
+            ]
+          }
+        }
+      },
+      "standard": {
+        "n": 174,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 174,
+            "value": 0.8735632183908046,
+            "difference_vs_rest": 0.03523986509739152,
+            "difference_ci95": [
+              -0.03703703703703698,
+              0.10957792207792205
+            ]
+          },
+          "urgency_exact": {
+            "n": 174,
+            "value": 0.4540229885057471,
+            "difference_vs_rest": -0.042982999518204945,
+            "difference_ci95": [
+              -0.14164244968248846,
+              0.045238095238095244
+            ]
+          },
+          "urgency_within_one": {
+            "n": 174,
+            "value": 0.9425287356321839,
+            "difference_vs_rest": -0.027531144607337077,
+            "difference_ci95": [
+              -0.06141975308641978,
+              0.003896953831508787
+            ]
+          },
+          "must_not_caught": {
+            "n": 28,
+            "value": 0.9285714285714286,
+            "difference_vs_rest": 0.09523809523809523,
+            "difference_ci95": [
+              0.0,
+              0.22458628841607564
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 174,
+            "value": 0.8333333333333334,
+            "difference_vs_rest": 0.01896207584830345,
+            "difference_ci95": [
+              -0.04384762948753085,
+              0.09042553191489366
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 174,
+            "value": 0.25862068965517243,
+            "difference_vs_rest": 0.03706380342762752,
+            "difference_ci95": [
+              -0.050108574060669875,
+              0.12735953808572062
+            ]
+          }
+        }
+      }
+    },
+    "customer_region": {
+      "asia_pacific": {
+        "n": 89,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 89,
+            "value": 0.9101123595505618,
+            "difference_vs_rest": 0.07281077224897448,
+            "difference_ci95": [
+              -0.003742241694048909,
+              0.15853566864617008
+            ]
+          },
+          "urgency_exact": {
+            "n": 89,
+            "value": 0.5168539325842697,
+            "difference_vs_rest": 0.05653647226680941,
+            "difference_ci95": [
+              -0.07374352039666449,
+              0.1787396181179895
+            ]
+          },
+          "urgency_within_one": {
+            "n": 89,
+            "value": 0.9775280898876404,
+            "difference_vs_rest": 0.02911539147494202,
+            "difference_ci95": [
+              -0.007786429365962078,
+              0.06349206349206349
+            ]
+          },
+          "must_not_caught": {
+            "n": 20,
+            "value": 1.0,
+            "difference_vs_rest": 0.18181818181818177,
+            "difference_ci95": [
+              0.0,
+              0.4363636363636364
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 89,
+            "value": 0.7528089887640449,
+            "difference_vs_rest": -0.09639736044230429,
+            "difference_ci95": [
+              -0.21282209853638423,
+              0.013264416490222919
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 89,
+            "value": 0.2696629213483146,
+            "difference_vs_rest": 0.03950419118958445,
+            "difference_ci95": [
+              -0.09843205574912894,
+              0.16964285714285718
+            ]
+          }
+        }
+      },
+      "europe": {
+        "n": 103,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 103,
+            "value": 0.7864077669902912,
+            "difference_vs_rest": -0.10014685485844821,
+            "difference_ci95": [
+              -0.20450450450450453,
+              -0.009401709401709368
+            ]
+          },
+          "urgency_exact": {
+            "n": 103,
+            "value": 0.4368932038834951,
+            "difference_vs_rest": -0.05470343477196704,
+            "difference_ci95": [
+              -0.17739837398373987,
+              0.066218487394958
+            ]
+          },
+          "urgency_within_one": {
+            "n": 103,
+            "value": 0.9320388349514563,
+            "difference_vs_rest": -0.03434771967039241,
+            "difference_ci95": [
+              -0.07389162561576357,
+              0.0054354201697102145
+            ]
+          },
+          "must_not_caught": {
+            "n": 20,
+            "value": 0.75,
+            "difference_vs_rest": -0.18181818181818177,
+            "difference_ci95": [
+              -0.5392857142857143,
+              0.061224489795918324
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 103,
+            "value": 0.8446601941747572,
+            "difference_vs_rest": 0.02953414375458918,
+            "difference_ci95": [
+              -0.0709211986681465,
+              0.1343115653274577
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 103,
+            "value": 0.2524271844660194,
+            "difference_vs_rest": 0.017133066818960596,
+            "difference_ci95": [
+              -0.0949142519219397,
+              0.13428773418168966
+            ]
+          }
+        }
+      },
+      "latin_america": {
+        "n": 38,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 38,
+            "value": 0.868421052631579,
+            "difference_vs_rest": 0.013635574083724178,
+            "difference_ci95": [
+              -0.0788281485955904,
+              0.10019377635928417
+            ]
+          },
+          "urgency_exact": {
+            "n": 38,
+            "value": 0.47368421052631576,
+            "difference_vs_rest": -0.0015633142261594624,
+            "difference_ci95": [
+              -0.1673414304993252,
+              0.1683060109289617
+            ]
+          },
+          "urgency_within_one": {
+            "n": 38,
+            "value": 0.9473684210526315,
+            "difference_vs_rest": -0.009727288518325605,
+            "difference_ci95": [
+              -0.08787878787878789,
+              0.042042042042042094
+            ]
+          },
+          "must_not_caught": {
+            "n": 4,
+            "value": 1.0,
+            "difference_vs_rest": 0.1333333333333333,
+            "difference_ci95": [
+              0.0,
+              0.34883720930232553
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 38,
+            "value": 0.868421052631579,
+            "difference_vs_rest": 0.04993920444676048,
+            "difference_ci95": [
+              -0.05835667600373473,
+              0.15880972696245732
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 38,
+            "value": 0.23684210526315788,
+            "difference_vs_rest": -0.004081987146083044,
+            "difference_ci95": [
+              -0.13632075471698113,
+              0.1487723113164809
+            ]
+          }
+        }
+      },
+      "north_america": {
+        "n": 111,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 111,
+            "value": 0.8738738738738738,
+            "difference_vs_rest": 0.0260477869173521,
+            "difference_ci95": [
+              -0.04597837240508329,
+              0.09923099674652469
+            ]
+          },
+          "urgency_exact": {
+            "n": 111,
+            "value": 0.4774774774774775,
+            "difference_vs_rest": 0.003564433999216632,
+            "difference_ci95": [
+              -0.09935510713542756,
+              0.09497549019607843
+            ]
+          },
+          "urgency_within_one": {
+            "n": 111,
+            "value": 0.963963963963964,
+            "difference_vs_rest": 0.011790050920485684,
+            "difference_ci95": [
+              -0.03385093167701869,
+              0.05665498134117386
+            ]
+          },
+          "must_not_caught": {
+            "n": 20,
+            "value": 0.85,
+            "difference_vs_rest": -0.036363636363636376,
+            "difference_ci95": [
+              -0.17647058823529416,
+              0.08405797101449275
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 111,
+            "value": 0.8468468468468469,
+            "difference_vs_rest": 0.03380336858597732,
+            "difference_ci95": [
+              -0.0437610079934968,
+              0.1167159138877164
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 111,
+            "value": 0.2072072072072072,
+            "difference_vs_rest": -0.0493145319232276,
+            "difference_ci95": [
+              -0.1311343523732904,
+              0.03865103635745837
+            ]
+          }
+        }
+      }
+    },
+    "language_fluency": {
+      "fluent": {
+        "n": 255,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 255,
+            "value": 0.8549019607843137,
+            "difference_vs_rest": -0.005563155494756056,
+            "difference_ci95": [
+              -0.11331010452961665,
+              0.09841534612176817
+            ]
+          },
+          "urgency_exact": {
+            "n": 255,
+            "value": 0.47058823529411764,
+            "difference_vs_rest": -0.017783857729138153,
+            "difference_ci95": [
+              -0.15154582259845412,
+              0.11464800589287594
+            ]
+          },
+          "urgency_within_one": {
+            "n": 255,
+            "value": 0.9607843137254902,
+            "difference_vs_rest": 0.018923848609211147,
+            "difference_ci95": [
+              -0.025940552899605063,
+              0.06556776556776556
+            ]
+          },
+          "must_not_caught": {
+            "n": 48,
+            "value": 0.8333333333333334,
+            "difference_vs_rest": -0.16666666666666663,
+            "difference_ci95": [
+              -0.453125,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 255,
+            "value": 0.8274509803921568,
+            "difference_vs_rest": 0.013497492020063784,
+            "difference_ci95": [
+              -0.09342270632593208,
+              0.11633986928104578
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 255,
+            "value": 0.2549019607843137,
+            "difference_vs_rest": 0.057227542179662555,
+            "difference_ci95": [
+              -0.046434494195688236,
+              0.15853881278538812
+            ]
+          }
+        }
+      },
+      "non_fluent": {
+        "n": 86,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 86,
+            "value": 0.8604651162790697,
+            "difference_vs_rest": 0.005563155494756056,
+            "difference_ci95": [
+              -0.10332554776999214,
+              0.11364001499491239
+            ]
+          },
+          "urgency_exact": {
+            "n": 86,
+            "value": 0.4883720930232558,
+            "difference_vs_rest": 0.017783857729138153,
+            "difference_ci95": [
+              -0.11682242990654207,
+              0.14904589994842699
+            ]
+          },
+          "urgency_within_one": {
+            "n": 86,
+            "value": 0.9418604651162791,
+            "difference_vs_rest": -0.018923848609211147,
+            "difference_ci95": [
+              -0.06747153009675488,
+              0.02543990703851262
+            ]
+          },
+          "must_not_caught": {
+            "n": 16,
+            "value": 1.0,
+            "difference_vs_rest": 0.16666666666666663,
+            "difference_ci95": [
+              0.0,
+              0.4285714285714286
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 86,
+            "value": 0.813953488372093,
+            "difference_vs_rest": -0.013497492020063784,
+            "difference_ci95": [
+              -0.12059046998806033,
+              0.08929517753047156
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 86,
+            "value": 0.19767441860465115,
+            "difference_vs_rest": -0.057227542179662555,
+            "difference_ci95": [
+              -0.16441981931112368,
+              0.050099914359120756
+            ]
+          }
+        }
+      }
+    }
+  }
+}
