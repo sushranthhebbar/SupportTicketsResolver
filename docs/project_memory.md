@@ -260,3 +260,13 @@ Cluster-bootstrap intervals and a group breakdown are in `docs/accuracy_uncertai
 - **Quota note:** the Groq free tier's daily token limit is shared across the probe, classification runs and any other live calls; a long 429 wait (hundreds of seconds, doubling) means stop and resume the next day. 503s are provider-side and are retried with `--retry-errors`.
 - **Branch state:** `confidence-calibration` pushed after commit `a9445c1`; later doc/data changes need another push.
 - **Still open:** finish the PR-03-v4 collection (179 tickets, ~2 days) and finalize H1; human citation-support review; latency and hallucination measurement; clean-checkout/Python 3.11 test check; fairness on validation; report, video, workbooks, effort log and archive.
+
+## PR-03-v4 final development verdict (340 of 341 paired; DEV-0261 still errored)
+- Intent accuracy 85.6% -> 93.2% (fixed 30, broken 4, net +26). Paired gain +7.6 points, 95% CI +1.6 to +14.7 (resampled by scenario cluster, 76 clusters; 9 scenarios improved, 4 worsened, 63 unchanged). Macro recall 0.843 -> 0.919. Urgency unchanged (47.6% -> 47.4%).
+- Safety-relevant: gold must-not tickets predicted as a must-not intent 56/64 -> 64/64 (all compliance_request -> data_export errors fixed); over-escalation of other tickets unchanged at 4.
+- Per class: compliance_request 53% -> 100%, integration_help 0% -> 92%, database_issue 81% -> 100%, onboarding 82% -> 100%, api_usage_question 87% -> 100%; authentication_failure 71% -> 50% (10/14 -> 7/14; three "cannot log in, password correct" tickets now predicted account_access, labels look genuinely ambiguous); api_key_issue 31% -> 23% (still weakest: 6 of 13 predicted authentication_failure, 4 security_incident).
+- **H1 (pre-registered) is NOT MET** on the criterion "no class loses > 10 points" (authentication_failure -21). Other three criteria pass (integration_help 92%, macro recall 0.919, net +26). Verdict is recorded as written; do not reinterpret it after the fact.
+- Remaining v4 errors: 23, all in 8 scenarios.
+- Caveats: the v4 definitions were written after reading these development errors (optimistic); gain rests on ~9 scenarios; only validation can confirm.
+- **Decision pending (user):** whether to adopt v4 as the runtime default. If adopted: refit calibration on the already-collected v4 predictions (`scripts/fit_calibration.py --predictions evaluation/calibration/development_predictions_pr03v4.jsonl`; calibration-v2 is v2-only), then check once on the validation set at the end and report the result either way. Runtime default is still PR-03-v2.
+- Collection file: `evaluation/calibration/development_predictions_pr03v4.jsonl` (346 rows, 340 ok). Re-run with `--retry-errors --max-tickets 5` to clear DEV-0261 if wanted.
