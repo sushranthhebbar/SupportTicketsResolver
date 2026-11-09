@@ -105,6 +105,18 @@ Run the full evaluation pipeline on the supplied 80-ticket validation set (live 
 calls). The separate 120-ticket assessment set will never be provided to this project,
 so local evaluation and final comparisons use the supplied validation set:
 
+A full live run costs several thousand tokens per ticket, so under the free Groq quota it
+must be spread over days. `--resume` reuses tickets already processed without error (and
+retries failed ones); `--max-new-tickets` caps each day's attempts. The metrics report is
+written only once every ticket has been attempted:
+
+```cmd
+.venv311\Scripts\python.exe .\scripts\run_evaluation.py --input evaluation\data\validation_tickets.json --output evaluation\results\validation_final_pr03v4.jsonl --processor src.pipeline:process_ticket --system-version 0.2-pr03v4 --resume --max-new-tickets 40
+.venv311\Scripts\python.exe .\scripts\verify_evaluation_artifacts.py --input evaluation\data\validation_tickets.json --results evaluation\results\validation_final_pr03v4.jsonl --report evaluation\results\validation_final_pr03v4.report.json
+```
+
+Earlier single-shot form, kept for reference:
+
 ```cmd
 .venv311\Scripts\python.exe .\scripts\run_evaluation.py --input evaluation\data\validation_tickets.json --output evaluation\results\validation_2026-11-02-retry.jsonl --processor src.pipeline:process_ticket --system-version 0.1
 .venv311\Scripts\python.exe .\scripts\verify_evaluation_artifacts.py --input evaluation\data\validation_tickets.json --results evaluation\results\validation_2026-11-02-retry.jsonl --report evaluation\results\validation_2026-11-02-retry.report.json
