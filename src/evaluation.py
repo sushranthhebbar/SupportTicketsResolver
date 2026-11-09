@@ -355,17 +355,42 @@ def run_evaluation(
     *,
     report_path: str | Path | None = None,
     system_version: str = "unspecified",
+    resume: bool = False,
+    max_new_tickets: int | None = None,
 ) -> dict[str, Any]:
     """Process each ticket once and write per-ticket JSONL and a JSON report.
+
+    With ``resume``, tickets already processed without error in ``output_path`` are
+    reused and only the rest (including previously failed tickets) are run, so a long
+    live run can be spread over several days of provider quota. ``max_new_tickets``
+    caps how many tickets are attempted in one invocation; when tickets remain, the
+    JSONL is written but no metrics report is, and ``run_info["complete"]`` is False.
 
     The processor receives only ``NormalizedTicket``. Dataset labels and
     historical outcomes are retained by the harness for scoring and baselines.
     Per-ticket exceptions are recorded so one bad record does not stop the run.
     """
     records = load_ticket_records(input_path)
+    output_file = _resolve_path(output_path)
+    reusable: dict[str, dict[str, Any]] = {}
+    if resume and output_file.exists():
+        for line in output_file.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                previous = json.loads(line)
+                if previous.get("error") is None and previous.get("result") is not None:
+                    reusable[previous["ticket_id"]] = previous
     rows: list[dict[str, Any]] = []
     total = len(records)
+    attempted = 0
+    complete = True
     for index, record in enumerate(records, start=1):
+        if record.ticket.ticket_id in reusable:
+            rows.append(reusable[record.ticket.ticket_id])
+            continue
+        if max_new_tickets is not None and attempted >= max_new_tickets:
+            complete = False
+            break
+        attempted += 1
         started = time.perf_counter()
         result: dict[str, Any] | None = None
         error: dict[str, str] | None = None
@@ -416,13 +441,22 @@ def run_evaluation(
             }
         )
 
-    output_file = _resolve_path(output_path)
     report_file = _resolve_path(report_path) if report_path else output_file.with_suffix(".report.json")
     output_file.parent.mkdir(parents=True, exist_ok=True)
     report_file.parent.mkdir(parents=True, exist_ok=True)
     with output_file.open("w", encoding="utf-8", newline="\n") as file:
         for row in rows:
             file.write(json.dumps(row, ensure_ascii=False) + "\n")
+    if not complete:
+        return {
+            "run_info": {
+                "complete": False,
+                "tickets_in_input": total,
+                "tickets_processed": len(rows),
+                "processing_errors": sum(1 for row in rows if row["error"] is not None),
+                "results_path": str(output_file),
+            }
+        }
 
     report = build_metrics(records, rows, system_version)
     report["run_info"].update(

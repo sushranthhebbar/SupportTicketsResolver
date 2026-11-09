@@ -182,3 +182,36 @@ def test_urgency_noise_analysis_reports_ceiling_and_adjacent_accuracy():
     assert out["conflict_free_exact_accuracy"] == 0
     assert out["conflicting_text_exact_accuracy"] == 2 / 3
     assert out["within_one_level_accuracy"] == 4 / 5
+
+
+def test_run_evaluation_resumes_and_retries_failed_tickets(tmp_path):
+    records = [
+        _record(f"T-{n}", intent="billing_query", urgency="low", route="auto_respond",
+                answerable=True, doc_ids=["DOC-1"], fcr=True)
+        for n in range(1, 5)
+    ]
+    input_path = tmp_path / "tickets.json"
+    _write_dataset(input_path, records)
+    results_path = tmp_path / "results.jsonl"
+    calls = []
+    fail_once = {"T-2"}
+
+    def processor(ticket):
+        calls.append(ticket.ticket_id)
+        if ticket.ticket_id in fail_once:
+            fail_once.discard(ticket.ticket_id)
+            raise RuntimeError("rate limited")
+        return {"route": "auto_respond", "intent": "billing_query", "urgency": "low"}
+
+    partial = run_evaluation(input_path, results_path, processor, resume=True, max_new_tickets=2)
+    assert partial["run_info"]["complete"] is False
+    assert partial["run_info"]["tickets_processed"] == 2
+    assert partial["run_info"]["processing_errors"] == 1
+    assert not (tmp_path / "results.report.json").exists()
+
+    final = run_evaluation(input_path, results_path, processor, resume=True)
+    assert final["run_info"]["tickets_processed"] == 4
+    assert final["run_info"]["processing_errors"] == 0
+    assert calls == ["T-1", "T-2", "T-2", "T-3", "T-4"]  # T-1 reused, T-2 retried
+    rows = [json.loads(line) for line in results_path.read_text(encoding="utf-8").splitlines()]
+    assert [row["ticket_id"] for row in rows] == ["T-1", "T-2", "T-3", "T-4"]

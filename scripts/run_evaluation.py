@@ -53,6 +53,17 @@ def main() -> int:
         default=3.0,
         help="Minimum seconds between model requests during evaluation (default: 3)",
     )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Reuse tickets already processed without error in --output and run only the rest",
+    )
+    parser.add_argument(
+        "--max-new-tickets",
+        type=int,
+        help="Attempt at most this many tickets in this invocation (use with --resume to "
+        "spread a live run over several days of provider quota)",
+    )
     args = parser.parse_args()
 
     try:
@@ -66,10 +77,21 @@ def main() -> int:
             processor,
             report_path=args.report,
             system_version=args.system_version,
+            resume=args.resume,
+            max_new_tickets=args.max_new_tickets,
         )
     except Exception as exc:
         parser.exit(2, f"Evaluation could not run: {type(exc).__name__}: {exc}\n")
 
+    if report["run_info"].get("complete") is False:
+        info = report["run_info"]
+        print(
+            f"Partial run: {info['tickets_processed']} of {info['tickets_in_input']} tickets saved "
+            f"({info['processing_errors']} errors). Re-run the same command with --resume to continue; "
+            "the metrics report is written when every ticket has been attempted."
+        )
+        print(f"Results: {info['results_path']}")
+        return 3
     print(
         f"Processed {report['run_info']['tickets_processed']} of "
         f"{report['run_info']['tickets_in_input']} tickets; "
