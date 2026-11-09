@@ -172,10 +172,12 @@ def test_prompt_v4_adds_intent_definitions_and_unknown_versions_fail(monkeypatch
 
     ticket = _record("T", "question about my invoice").ticket
     kwargs = dict(api_key="real-key", model="m", endpoint="http://x", requester=Requester())
-    v2 = classify_ticket(ticket, **kwargs)
+    v2 = classify_ticket(ticket, prompt_version="PR-03-v2", **kwargs)
     assert "Intent definitions" not in sent["prompt"] and v2["prompt_version"] == "PR-03-v2"
     v4 = classify_ticket(ticket, prompt_version="PR-03-v4", **kwargs)
     assert "Intent definitions" in sent["prompt"] and v4["prompt_version"] == "PR-03-v4"
+    default = classify_ticket(ticket, **kwargs)
+    assert default["prompt_version"] == "PR-03-v4"  # runtime default
     with pytest.raises(ValueError, match="prompt version"):
         classify_ticket(ticket, prompt_version="PR-03-v9", **kwargs)
 

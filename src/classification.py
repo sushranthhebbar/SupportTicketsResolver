@@ -32,11 +32,12 @@ INTENT_LABELS = frozenset(
     }
 )
 URGENCY_LABELS = frozenset({"low", "medium", "high"})
-CLASSIFIER_PROMPT_VERSION = "PR-03-v2"
+CLASSIFIER_PROMPT_VERSION = "PR-03-v4"
 SUPPORTED_PROMPT_VERSIONS = frozenset({"PR-03-v2", "PR-03-v4"})
 # PR-03-v4 is PR-03-v2 plus these intent definitions and tie-break rules (urgency text
-# unchanged). It stays an experiment until it passes the criteria in
-# docs/development_error_analysis.md (H1); the runtime default remains PR-03-v2.
+# unchanged). It is the runtime default by decision, although the pre-registered H1
+# criteria in docs/development_error_analysis.md were not fully met (authentication_failure
+# recall fell more than 10 points); see docs/project_memory.md. PR-03-v2 remains selectable.
 INTENT_DEFINITIONS = (
     "Intent definitions (choose the intent naming the customer's primary request or the "
     "capability that is failing): "

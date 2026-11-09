@@ -35,23 +35,28 @@ longer of `Retry-After` and Groq's token-window reset timer when available.
 Raw model confidence is not used for routing. Calibrate it from development data only
 (prompt-tuning tickets and all validation tickets are excluded). Collection is
 resumable, so it can span several days to stay within provider token quotas
-(classification-only, roughly 700 tokens per ticket):
+(classification-only, roughly 1.4K tokens per ticket):
 
 ```cmd
-.venv311\Scripts\python.exe .\scripts\collect_calibration_predictions.py --max-tickets 100
-.venv311\Scripts\python.exe .\scripts\fit_calibration.py
+.venv311\Scripts\python.exe .\scripts\collect_calibration_predictions.py --max-tickets 100 --output evaluation\calibration\development_predictions_pr03v4.jsonl
+.venv311\Scripts\python.exe .\scripts\fit_calibration.py --predictions evaluation\calibration\development_predictions_pr03v4.jsonl --output evaluation\calibration\calibration-v3.json --version calibration-v3
 ```
 
-`fit_calibration.py` splits by paraphrase scenario (`src/scenarios.py`, text-only clustering, so near-duplicate wordings never straddle fit and held-out) and fits isotonic calibrators on the fit split, reports Brier score,
-reliability bins, and per-class precision on the held-out split, and writes
-`evaluation/calibration/calibration-v2.json` (v1 used an exact-text split that leaked paraphrases). The artifact is **not** active until you
-review those results and set `CALIBRATION_ARTIFACT=evaluation/calibration/calibration-v2.json`
-in `.env`. It applies only to predictions from the same model and prompt version it was
-fitted for; otherwise tickets stay in human review.
+The collector uses the runtime default prompt (PR-03-v4), so always pass `--output` explicitly:
+`evaluation/calibration/development_predictions.jsonl` holds the older PR-03-v2 predictions and must not be mixed with v4 rows.
 
-Compare an alternative classifier prompt against the stored PR-03-v2 development
-predictions (live calls, development tickets only; about 340 calls, so it may need two
-days under the 200K-token daily Groq quota; the run resumes):
+`fit_calibration.py` splits by paraphrase scenario (`src/scenarios.py`, text-only clustering, so near-duplicate wordings never straddle fit and held-out) and fits isotonic calibrators on the fit split, reports Brier score,
+reliability bins, and per-class precision on the held-out split. The artifact is **not** active until you
+review those results and set `CALIBRATION_ARTIFACT=evaluation/calibration/calibration-v3.json`
+in `.env`. It applies only to predictions from the same model and prompt version it was
+fitted for (`calibration-v2` is PR-03-v2 only); otherwise tickets stay in human review.
+`calibration-v3` is currently not recommended for activation: under PR-03-v4 the intent
+confidence takes three values and does not separate right from wrong, so the 0.80 gate filters nothing
+(see `docs/project_memory.md`).
+
+Compare a classifier prompt against the stored PR-03-v2 development baseline
+(live calls, development tickets only; about 340 calls at roughly 1.4K tokens each, so it
+needs two to three days under the 200K-token daily Groq quota; the run resumes):
 
 ```cmd
 .venv\Scripts\python.exe .\scripts\collect_calibration_predictions.py --prompt-version PR-03-v4 --include-tuning-tickets --only-ids-from evaluation\calibration\development_predictions.jsonl --output evaluation\calibration\development_predictions_pr03_v4.jsonl --max-tickets 400

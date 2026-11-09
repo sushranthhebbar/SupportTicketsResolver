@@ -6,7 +6,7 @@ import json
 from typing import Any, Callable, Mapping, Sequence
 
 from src.calibration import configured_artifact
-from src.classification import classify_ticket
+from src.classification import CLASSIFIER_PROMPT_VERSION, classify_ticket
 from src.escalation import build_escalation_summary
 from src.logging_store import log_decision
 from src.routing import route_ticket
@@ -107,7 +107,7 @@ def process_ticket(
         "ticket_id": ticket.ticket_id,
         "model_name": classification.get("model_name"),
         "model_version": classification.get("model_version"),
-        "prompt_version": classification.get("prompt_version", "PR-03-v2"),
+        "prompt_version": classification.get("prompt_version", CLASSIFIER_PROMPT_VERSION),
         "requirement_ids": ["FR-09"],
         "input_summary": f"Ticket {ticket.ticket_id} received on {ticket.channel}.",
     }
