@@ -240,3 +240,53 @@ def test_pipeline_retrieval_failure_returns_review_result(tmp_path):
     assert result["answer_status"] == "needs_human"
     assert result["route"] == "review"
     assert count_decisions(database_url) == 3
+
+
+def test_pipeline_logs_guardrail_block(tmp_path):
+    from src.guardrails import validate_grounded_answer
+    from src.logging_store import connect
+
+    database_url = f"sqlite:///{tmp_path / 'block.db'}"
+    unsafe = _payload(draft="Use this key: sk-abcdefghijklmnop123 [DOC-HELP-001].")
+    result = process_ticket(
+        _ticket(),
+        classifier=lambda _ticket: {
+            "intent": "api_usage_question",
+            "intent_confidence": 0.9,
+            "urgency": "low",
+            "urgency_confidence": 0.9,
+            "urgency_evidence": "",
+            "urgency_evidence_valid": True,
+            "urgency_ambiguous": False,
+        },
+        database_url=database_url,
+        retriever=lambda _query: [SOURCE],
+        answerer=lambda _ticket, sources: validate_grounded_answer(unsafe, sources),
+    )
+    assert result["action"] == "block"
+    assert result["answer"] == ""
+    connection = connect(database_url)
+    row = connection.execute(
+        "SELECT action_taken, guardrail_results_json FROM decisions WHERE stage = 'answer_drafting'"
+    ).fetchone()
+    connection.close()
+    assert row["action_taken"] == "block"
+    assert json.loads(row["guardrail_results_json"])["unsafe_content"]["passed"] is False
+
+
+def test_pipeline_logs_classifier_failure(tmp_path):
+    import pytest
+
+    from src.logging_store import connect
+
+    database_url = f"sqlite:///{tmp_path / 'classifier-failure.db'}"
+
+    def failing_classifier(_ticket):
+        raise RuntimeError("provider down")
+
+    with pytest.raises(RuntimeError):
+        process_ticket(_ticket(), classifier=failing_classifier, database_url=database_url)
+    connection = connect(database_url)
+    rows = connection.execute("SELECT stage, action_taken, ticket_id FROM decisions").fetchall()
+    connection.close()
+    assert [tuple(r) for r in rows] == [("classification", "error", "T-ANSWER-1")]

@@ -90,17 +90,20 @@ For the declaration I will state this as it is: the switch is a configuration
 setting, not an instant control, and a runtime flag read on every ticket would
 be the first thing to add before any real deployment.
 
-## 5. What to do
+## 5. Changes made and what remains
 
-Small code changes, in the order I would take them:
+Built on 11 November 2026 (neither changes routing or drafting behaviour, so
+the frozen validation results still stand):
 
-1. Log a decision when the classifier fails (closes the reconciliation gap).
-2. Add a tone-and-scope check for commitments (refunds, timelines, credits) to
-   `validate_grounded_answer`, with a test.
-3. Add a ticket-input injection check that records the input when it fires.
-4. Widen the private-data check to emails and account-number patterns.
-5. Add a test that a guardrail block writes a log row (A7).
+1. `process_ticket` now logs a `classification` decision with action `error`
+   when the classifier raises, then re-raises, so the log reconciles with the
+   tickets processed. The dashboard and review store tolerate the empty
+   prediction. Test: `test_pipeline_logs_classifier_failure`.
+2. A guardrail block is shown to write its log row (A7 test):
+   `test_pipeline_logs_guardrail_block` checks the `block` action and the
+   failed `unsafe_content` result in the stored row.
 
-Items 2 to 5 are all small, but each changes behaviour on a frozen validation
-set that is already spent, so any rerun would not be a clean comparison. If the
-code is left alone, the report should list them as known gaps.
+Not built, to be listed as known gaps in the report: the tone-and-scope check
+for commitments, the ticket-input injection check, and wider private-data
+patterns (emails, account numbers). Each would change behaviour after the
+validation set was spent.

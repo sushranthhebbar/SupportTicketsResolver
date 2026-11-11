@@ -36,7 +36,24 @@ def process_ticket(
     Drafts are always for agent review. Retrieval/drafting failures produce a safe
     review result rather than aborting the evaluation batch.
     """
-    classification = dict(classifier(ticket))
+    try:
+        classification = dict(classifier(ticket))
+    except Exception as exc:
+        # A failed classification is still a decision point; record it so the
+        # log reconciles with the tickets processed, then let the caller see it.
+        log_decision(
+            {
+                "ticket_id": ticket.ticket_id,
+                "stage": "classification",
+                "input_summary": f"Ticket {ticket.ticket_id} received on {ticket.channel}.",
+                "prompt_version": CLASSIFIER_PROMPT_VERSION,
+                "requirement_ids": ["FR-09"],
+                "action_taken": "error",
+                "reason": f"Classification failed ({type(exc).__name__}); no routing decision was made.",
+            },
+            database_url,
+        )
+        raise
     calibration_version = None
     if calibrated_confidence is None:
         artifact = configured_artifact()
