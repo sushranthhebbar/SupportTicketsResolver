@@ -40,6 +40,30 @@ def safe_answer_failure(
     }
 
 
+def check_ticket_input(subject: str, body: str) -> dict[str, Any] | None:
+    """Return a blocked result if the ticket text carries credentials or instruction-like text.
+
+    Runs before retrieval and drafting, so such a ticket never reaches the model for a reply.
+    The matched categories are recorded, not the matched text.
+    """
+    text = f"{subject}\n{body}"
+    found = []
+    if PROMPT_INJECTION_RE.search(text):
+        found.append("instruction_like_text")
+    if any(pattern.search(text) for pattern in SECRET_VALUE_PATTERNS):
+        found.append("credential_like_text")
+    if not found:
+        return None
+    failure = safe_answer_failure(
+        "input_integrity",
+        "The ticket contains " + " and ".join(name.replace("_", " ") for name in found)
+        + "; no draft was generated and an agent must review it.",
+        status="blocked",
+    )
+    failure["guardrail_results"]["input_integrity"]["matched"] = found
+    return failure
+
+
 def validate_grounded_answer(
     payload: Mapping[str, Any],
     retrieved_sources: list[Mapping[str, Any]],

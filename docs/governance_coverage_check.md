@@ -123,3 +123,23 @@ ticket that is blocked, so it is not yet demonstrated.
 Offline check: the same patterns, run over the ticket text of all 500 development and 80
 validation tickets, match none, so an input-side check using them would not change any
 existing result.
+
+## 7. Input-side check built (11 November 2026)
+
+`check_ticket_input` (`src/guardrails.py`) scans the ticket subject and body with the same
+instruction-like and credential-like patterns used on drafts. On a match, `process_ticket`
+skips retrieval and drafting, records a `block` decision with the failed `input_integrity`
+result and the matched categories, and routes the ticket to `review`. The ticket text is
+not written to the log for these tickets, so a pasted credential is not copied into it;
+the review page therefore shows no ticket body for them and the agent reads the ticket in
+the source system. Other tickets are unchanged: the patterns match none of the 580
+development and validation tickets.
+
+Live run of `scripts/demo_guardrail_ticket.py` with the real model: all four engineered
+tickets (three with credentials, one with an injected instruction) ended `block`, no draft
+was generated, and the decision log shows the `block` row. This demonstrates A7.
+
+Effect on the gaps in section 2: instruction integrity and private data are now checked
+on the ticket as well as the draft (still credentials and injection phrases only; no
+names, emails or account numbers). Tone and scope remains missing. The validation run
+was made before this check existed, and it would not have changed any of its 80 tickets.

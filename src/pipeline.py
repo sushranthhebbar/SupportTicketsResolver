@@ -8,6 +8,7 @@ from typing import Any, Callable, Mapping, Sequence
 from src.calibration import configured_artifact
 from src.classification import CLASSIFIER_PROMPT_VERSION, classify_ticket
 from src.escalation import build_escalation_summary
+from src.guardrails import check_ticket_input
 from src.logging_store import log_decision
 from src.routing import route_ticket
 from src.tickets import NormalizedTicket
@@ -91,6 +92,11 @@ def process_ticket(
             intent=classification.get("intent"),
             urgency=classification.get("urgency"),
         )
+    elif generate_answer and (blocked := check_ticket_input(ticket.subject, ticket.body)):
+        answer_result = blocked
+        routing["route"] = "review"
+        routing["action"] = "review"
+        routing["reason"] = "Grounded reply requires human review: " + str(blocked["reason"])
     elif generate_answer:
         try:
             if retriever is None:
@@ -171,6 +177,11 @@ def process_ticket(
                             "channel": ticket.channel,
                             "subject": ticket.subject,
                             "body": ticket.body,
+                        }
+                        if "input_integrity" not in answer_result.get("guardrail_results", {})
+                        else {
+                            "channel": ticket.channel,
+                            "withheld": "ticket text not stored: it matched the input_integrity check",
                         },
                         "retrieved_sources": [
                             {

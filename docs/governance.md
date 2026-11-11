@@ -22,8 +22,8 @@ retention rule. Detail: `docs/governance_coverage_check.md`.
 | ID | Risk | Likelihood | Impact | Mitigation in the design | Owner |
 |---|---|---|---|---|---|
 | R-01 | The system answers confidently and incorrectly | Medium: 4 of 50 drafts I read would mislead a reviewer who skims | High | No send path exists; every draft goes to an agent. Drafts cite sources inline and citations are checked against retrieval. Must-not intents always escalate (64/64 development, 14/14 validation). Not mitigated: the automatic checks missed all 4 misleading drafts. Hallucination rate is unmeasured until two assessors review. | Sushranth Hebbar |
-| R-02 | Private data appears in an outbound response | Low in the prototype (nothing is sent); medium if deployed | High | Draft is blocked if it contains key-, token- or password-like strings. Not covered: names, emails, addresses, account numbers, another customer's data. The drafter is given the ticket and retrieved articles only, not other customers' records. | Sushranth Hebbar |
-| R-03 | A customer's input is treated as an instruction | Medium (untested adversarially) | Medium | The prompt marks ticket text as untrusted. The draft is scanned for instruction-like text and blocked. Not covered: the ticket itself is not scanned, and no injection test set was run. | Sushranth Hebbar |
+| R-02 | Private data appears in an outbound response | Low in the prototype (nothing is sent); medium if deployed | High | Draft is blocked if it contains key-, token- or password-like strings. The ticket is scanned for the same strings. Not covered: names, emails, addresses, account numbers, another customer's data. The drafter is given the ticket and retrieved articles only, not other customers' records. | Sushranth Hebbar |
+| R-03 | A customer's input is treated as an instruction | Medium (untested adversarially) | Medium | The prompt marks ticket text as untrusted. The draft is scanned for instruction-like text and blocked. The ticket text is also scanned and blocked before drafting. Only fixed phrases are matched, so paraphrased injections would pass, and no injection test set was run. | Sushranth Hebbar |
 | R-04 | Some customer groups receive worse answers | Medium | Medium | Segment audit on validation (section 3): no gap distinguishable from noise on intent accuracy; groups of 8 to 61 tickets cannot show gaps under about 20 points. Draft quality by group was not assessed. | Sushranth Hebbar |
 | R-05 | The documentation the system relies on goes stale | High over time | Medium | Each citation names the article, so an agent can open the source. Two drafts used articles restricted to plans the customer lacks. Plan-scope check is specified (PRD v2.0 FR-02), not built. No freshness check exists. | Technical writer (proposed) |
 | R-06 | The model provider becomes unavailable | High on the free tier (HTTP 429 seen on 1 and 2 Nov) | Low in the prototype | Retries honour the provider's reset time; a failed draft becomes a safe `needs_human` result and the ticket goes to review; failed classification is logged and the run can resume. No second provider and no disconnect test (A11). | Sushranth Hebbar |
@@ -68,10 +68,10 @@ What it shows:
 ## 4. Guardrails
 
 Summarised from the coverage check: confidence floor met; private data, grounding and
-instruction integrity partial; tone and scope (no commitments on refunds or timelines)
+instruction integrity partial (the ticket text and the draft are both scanned for credentials
+and injection phrases); tone and scope (no commitments on refunds or timelines)
 missing. A fired guardrail blocks the draft and sends the ticket to review, and the block
-and its reason are logged. The validation run produced no blocks, so a demo ticket is
-needed to show one.
+and its reason are logged. The validation run produced no blocks. Four engineered tickets run live (`scripts/demo_guardrail_ticket.py`) were all blocked by the input check, with no draft and a logged `block` row. Seven earlier tickets built to make the model leak a credential did not block, because the model refused.
 
 ## 5. Incident procedure
 
