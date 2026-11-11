@@ -313,3 +313,9 @@ Cluster-bootstrap intervals and a group breakdown are in `docs/accuracy_uncertai
 - Stage 3: PR-01..PR-04 change histories, versions (PR-02 v2.0, PR-03 v4.0) and runtime model (qwen/qwen3.8-27b on Groq); PR-04 is documented as not used at runtime (deterministic summary in `src/escalation.py`).
 - Stage 4: backlog items B-16..B-19 added (work not in the original plan, no hours), week 3 plan 16-20 Nov (hours are proposals), drop list (4 items), daily check-ins reconstructed from commits. Capacity table: only week two filled (24 h max).
 - Effort log: details, task entries 26 Oct-11 Nov reconstructed from commits (a note in the document says so), five largest estimates, two of the four reflection answers. **Hours columns, planned/actual by stage, weekly availability and capacity for weeks 1 and 3 are left for the author.**
+
+## Human draft review: dropped (11 November 2026)
+- Decision by the author: the two-assessor review of the 50 validation drafts is not being done before the 22 November deadline. Nothing in the gate (A1-A12) requires it; the Evaluation Framework prescribes it as the method for hallucination rate and citation accuracy, so both are reported as **not measured**.
+- Report wording: the automatic citation check is a retrieval check only; `docs/validation_draft_review.md` is one informal read (39 sound, 7 minor, 4 would mislead a skimming reviewer) and must not be presented as a measured rate.
+- Kit kept for later: `evaluation/human_review/` (packet, blank assessor sheets, README) and `scripts/score_draft_review.py`.
+- Stage 4 plan updated: Tuesday 17 November row reduced to 3 hours (tests and clean-checkout rehearsal); drop-list item 3 now covers the whole review.
