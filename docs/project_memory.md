@@ -308,3 +308,8 @@ Cluster-bootstrap intervals and a group breakdown are in `docs/accuracy_uncertai
 ## Workbooks: Stage 5 revision log and PRD v2.0 (2026-11-11)
 - Filled `Stage_5_PRD_Revision_Log.docx` (10 change rows, 6 assumptions, 5 "not changed", 4 reflection answers) and updated `Stage_2_PRD_Template.docx` to v2.0 (FR-02/03/04/05/09, NFR-01/03/06 changed, NFR-08 added, offline success measures, open questions). PRD v1.0 is in git at 8e4eedf. FR-02 plan-scope check and FR-03 subject handling are specified but NOT implemented (frozen system). The 25-ticket "inconclusive group" threshold in NFR-06 is a v2 proposal by the author, not from the course material.
 - Still blank/partial: Stage 4 (capacity, 4 backlog rows, week 3 plan, drop list, daily check-ins), Stage 3 PR-01 change history, effort log (hours must come from the author).
+
+## Remaining workbooks drafted (2026-11-11)
+- Stage 3: PR-01..PR-04 change histories, versions (PR-02 v2.0, PR-03 v4.0) and runtime model (qwen/qwen3.8-27b on Groq); PR-04 is documented as not used at runtime (deterministic summary in `src/escalation.py`).
+- Stage 4: backlog items B-16..B-19 added (work not in the original plan, no hours), week 3 plan 16-20 Nov (hours are proposals), drop list (4 items), daily check-ins reconstructed from commits. Capacity table: only week two filled (24 h max).
+- Effort log: details, task entries 26 Oct-11 Nov reconstructed from commits (a note in the document says so), five largest estimates, two of the four reflection answers. **Hours columns, planned/actual by stage, weekly availability and capacity for weeks 1 and 3 are left for the author.**
