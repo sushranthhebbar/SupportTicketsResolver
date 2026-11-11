@@ -143,3 +143,21 @@ Effect on the gaps in section 2: instruction integrity and private data are now 
 on the ticket as well as the draft (still credentials and injection phrases only; no
 names, emails or account numbers). Tone and scope remains missing. The validation run
 was made before this check existed, and it would not have changed any of its 80 tickets.
+
+## 8. Failure handling, A11 (11 November 2026)
+
+`scripts/demo_failure_modes.py` induces each condition and shows the result:
+
+| Condition | How induced | Result |
+|---|---|---|
+| Provider disconnected entirely | `MODEL_API_URL` set to a closed port (real) | Harness run of 2 tickets finishes; both recorded as `ConnectionError`, each with a logged `error` decision. A drafting-stage disconnect gives `needs_human`, route `review`, next step `retry_later`. |
+| Provider rejects the key | Wrong key sent to the real provider | `needs_human`, `provider_error` guardrail result |
+| Provider timeout | Stubbed `requests.Timeout` | `needs_human`, `retry_later` |
+| Rate limiting | Stubbed HTTP 429 (five retries, then give up) | `needs_human`, `retry_later`. A real 429 was also seen on 1 and 2 November. |
+| No retrieval hit | Retriever returns nothing, or raises | `needs_human`, route `review` |
+| Malformed input | One ticket with an unsupported channel and no text in a file of three | **Found a gap:** the whole run stopped on the first invalid record. Fixed: the harness now skips invalid records, lists them (id and reason) under `run_info.rejected_tickets` and processes the rest. Test added. |
+
+Limit: if the provider is down at classification, the ticket has no intent or route in
+the pipeline result. The harness records the error and a resumed run retries it, but no
+live intake path yet puts such a ticket into the agent queue. A real deployment should
+route it to review.

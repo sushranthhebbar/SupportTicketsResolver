@@ -373,7 +373,8 @@ def run_evaluation(
     historical outcomes are retained by the harness for scoring and baselines.
     Per-ticket exceptions are recorded so one bad record does not stop the run.
     """
-    records = load_ticket_records(input_path)
+    rejected: list[dict[str, Any]] = []
+    records = load_ticket_records(input_path, rejected)
     output_file = _resolve_path(output_path)
     reusable: dict[str, dict[str, Any]] = {}
     if resume and output_file.exists():
@@ -457,6 +458,7 @@ def run_evaluation(
                 "tickets_in_input": total,
                 "tickets_processed": len(rows),
                 "processing_errors": sum(1 for row in rows if row["error"] is not None),
+                "rejected_tickets": rejected,
                 "results_path": str(output_file),
             }
         }
@@ -467,6 +469,7 @@ def run_evaluation(
             "input_path": str(_resolve_path(input_path)),
             "results_path": str(output_file),
             "report_path": str(report_file),
+            "rejected_tickets": rejected,
         }
     )
     with report_file.open("w", encoding="utf-8") as file:

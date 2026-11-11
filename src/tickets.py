@@ -124,8 +124,14 @@ def normalize_ticket(record: Mapping[str, Any]) -> NormalizedTicket:
     )
 
 
-def load_ticket_records(path: str | Path) -> list[TicketRecord]:
-    """Load a JSON ticket list, separating runtime fields from annotations."""
+def load_ticket_records(
+    path: str | Path, rejected: list[dict[str, Any]] | None = None
+) -> list[TicketRecord]:
+    """Load a JSON ticket list, separating runtime fields from annotations.
+
+    An invalid ticket raises ValueError unless ``rejected`` is given; then it is skipped
+    and described in that list, so one malformed record does not stop a whole run.
+    """
     source_path = Path(path)
     if not source_path.is_absolute():
         source_path = PROJECT_ROOT / source_path
@@ -140,7 +146,16 @@ def load_ticket_records(path: str | Path) -> list[TicketRecord]:
         try:
             ticket = normalize_ticket(raw_record)
         except ValueError as exc:
-            raise ValueError(f"Invalid ticket at dataset index {index}: {exc}") from exc
+            if rejected is None:
+                raise ValueError(f"Invalid ticket at dataset index {index}: {exc}") from exc
+            rejected.append(
+                {
+                    "index": index,
+                    "ticket_id": raw_record.get("ticket_id") if isinstance(raw_record, Mapping) else None,
+                    "reason": str(exc),
+                }
+            )
+            continue
 
         labels = raw_record.get("labels", {})
         history = raw_record.get("history", {})

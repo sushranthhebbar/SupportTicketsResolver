@@ -217,3 +217,18 @@ def test_run_evaluation_resumes_and_retries_failed_tickets(tmp_path):
     assert calls == ["T-1", "T-2", "T-2", "T-3", "T-4"]  # T-1 reused, T-2 retried
     rows = [json.loads(line) for line in results_path.read_text(encoding="utf-8").splitlines()]
     assert [row["ticket_id"] for row in rows] == ["T-1", "T-2", "T-3", "T-4"]
+
+
+def test_malformed_ticket_is_rejected_without_stopping_the_run(tmp_path):
+    good = _record("OK-1", intent="rate_limit", urgency="low", route="review", answerable=False, doc_ids=[], fcr=True)
+    bad = {"ticket_id": "BAD-1", "channel": "fax", "subject": "", "body": ""}
+    dataset = tmp_path / "tickets.json"
+    _write_dataset(dataset, [good, bad, dict(good, ticket_id="OK-2")])
+    report = run_evaluation(
+        dataset, tmp_path / "out.jsonl", lambda ticket: {"route": "review", "intent": "rate_limit", "urgency": "low"}
+    )
+    rows = [json.loads(line) for line in (tmp_path / "out.jsonl").read_text().splitlines()]
+    assert [row["ticket_id"] for row in rows] == ["OK-1", "OK-2"]
+    rejected = report["run_info"]["rejected_tickets"]
+    assert [item["ticket_id"] for item in rejected] == ["BAD-1"]
+    assert "Unsupported channel" in rejected[0]["reason"]
