@@ -292,3 +292,6 @@ Cluster-bootstrap intervals and a group breakdown are in `docs/accuracy_uncertai
 - Latency not recorded in the report (null); hallucination rate, sentence-level citation support and confidence calibration still need human review or a calibrated output.
 - Reported as measured; no tuning after seeing these results. The validation set is now spent for PR-03-v4.
 - Still open: Python 3.11 test check (user), human citation/hallucination review, latency measurement, fairness on validation, report, video, workbooks, effort log and archive, push.
+
+## Validation draft review (2026-11-11)
+- `docs/validation_draft_review.md`: assistant read of all 50 `draft_ready` validation drafts against the cited docs (not the human review the plan requires). 39 sound, 7 minor, 4 need a person (VAL-0045 days-long queued export told not to cancel; VAL-0049 revokes a key on a subject-line "exposed" claim; VAL-0066 no actual data location; VAL-0078 invents a restore problem from the subject). Patterns: subject treated as fact over the body; doc `applies_to` plan ignored (VAL-0051, VAL-0076 are Standard but the docs are Business/Enterprise); multi-ID citation `[A, B]` not parsed (VAL-0016). Fixes listed there are NOT applied (frozen system; would need a fresh evaluation).
