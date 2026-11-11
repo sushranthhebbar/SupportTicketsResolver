@@ -1,0 +1,840 @@
+{
+  "n_tickets": 80,
+  "n_scenario_clusters": 50,
+  "bootstrap_reps": 2000,
+  "seed": 20261106,
+  "note": "95% percentile intervals from resampling scenario clusters. Development tickets only.",
+  "overall": {
+    "intent_accuracy": {
+      "description": "intent exactly matches the label",
+      "n": 80,
+      "value": 0.9125,
+      "ci95": [
+        0.8333333333333334,
+        0.975
+      ]
+    },
+    "urgency_exact": {
+      "description": "urgency exactly matches the label",
+      "n": 80,
+      "value": 0.4375,
+      "ci95": [
+        0.3333333333333333,
+        0.5487804878048781
+      ]
+    },
+    "urgency_within_one": {
+      "description": "urgency within one level of the label",
+      "n": 80,
+      "value": 0.85,
+      "ci95": [
+        0.7553191489361702,
+        0.9393939393939394
+      ]
+    },
+    "must_not_caught": {
+      "description": "gold must-not-auto-respond tickets predicted as a must-not intent",
+      "n": 14,
+      "value": 1.0,
+      "ci95": [
+        1.0,
+        1.0
+      ]
+    },
+    "auto_respond_rate": {
+      "description": "tickets router-v4 + calibration-v2 would auto-respond",
+      "n": 80,
+      "value": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ]
+    },
+    "unsafe_auto_rate": {
+      "description": "tickets auto-responded although the label expects escalation",
+      "n": 80,
+      "value": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "fairness": {
+    "channel": {
+      "chat": {
+        "n": 22,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 22,
+            "value": 0.9090909090909091,
+            "difference_vs_rest": -0.004702194357366851,
+            "difference_ci95": [
+              -0.17158385093167705,
+              0.1428571428571429
+            ]
+          },
+          "urgency_exact": {
+            "n": 22,
+            "value": 0.3181818181818182,
+            "difference_vs_rest": -0.16457680250783702,
+            "difference_ci95": [
+              -0.41086587436332767,
+              0.07575757575757575
+            ]
+          },
+          "urgency_within_one": {
+            "n": 22,
+            "value": 0.8181818181818182,
+            "difference_vs_rest": -0.04388714733542309,
+            "difference_ci95": [
+              -0.24171539961013644,
+              0.10511089681774344
+            ]
+          },
+          "must_not_caught": {
+            "n": 5,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 22,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 22,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "docs_comment": {
+        "n": 16,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 16,
+            "value": 0.875,
+            "difference_vs_rest": -0.046875,
+            "difference_ci95": [
+              -0.22632103688933192,
+              0.09427609427609429
+            ]
+          },
+          "urgency_exact": {
+            "n": 16,
+            "value": 0.4375,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              -0.2810126582278481,
+              0.2852112676056338
+            ]
+          },
+          "urgency_within_one": {
+            "n": 16,
+            "value": 0.9375,
+            "difference_vs_rest": 0.109375,
+            "difference_ci95": [
+              -0.0911764705882353,
+              0.265625
+            ]
+          },
+          "must_not_caught": {
+            "n": 4,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 16,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 16,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "email": {
+        "n": 31,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 31,
+            "value": 0.967741935483871,
+            "difference_vs_rest": 0.09019091507570776,
+            "difference_ci95": [
+              -0.026495726495726513,
+              0.22297297297297303
+            ]
+          },
+          "urgency_exact": {
+            "n": 31,
+            "value": 0.5806451612903226,
+            "difference_vs_rest": 0.23370638578011854,
+            "difference_ci95": [
+              0.0,
+              0.4920634920634921
+            ]
+          },
+          "urgency_within_one": {
+            "n": 31,
+            "value": 0.8387096774193549,
+            "difference_vs_rest": -0.018433179723502224,
+            "difference_ci95": [
+              -0.21797986810135372,
+              0.17112299465240643
+            ]
+          },
+          "must_not_caught": {
+            "n": 3,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 31,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 31,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "forum": {
+        "n": 11,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 11,
+            "value": 0.8181818181818182,
+            "difference_vs_rest": -0.10935441370223975,
+            "difference_ci95": [
+              -0.3719806763285024,
+              0.0847457627118644
+            ]
+          },
+          "urgency_exact": {
+            "n": 11,
+            "value": 0.2727272727272727,
+            "difference_vs_rest": -0.19104084321475628,
+            "difference_ci95": [
+              -0.484375,
+              0.13225806451612904
+            ]
+          },
+          "urgency_within_one": {
+            "n": 11,
+            "value": 0.8181818181818182,
+            "difference_vs_rest": -0.03689064558629773,
+            "difference_ci95": [
+              -0.3285714285714286,
+              0.1954022988505747
+            ]
+          },
+          "must_not_caught": {
+            "n": 2,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 11,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 11,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    },
+    "customer_tier": {
+      "business": {
+        "n": 30,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 30,
+            "value": 0.9,
+            "difference_vs_rest": -0.020000000000000018,
+            "difference_ci95": [
+              -0.15652173913043477,
+              0.10303030303030303
+            ]
+          },
+          "urgency_exact": {
+            "n": 30,
+            "value": 0.4,
+            "difference_vs_rest": -0.06,
+            "difference_ci95": [
+              -0.2514285714285714,
+              0.1604197901049475
+            ]
+          },
+          "urgency_within_one": {
+            "n": 30,
+            "value": 0.7666666666666667,
+            "difference_vs_rest": -0.1333333333333333,
+            "difference_ci95": [
+              -0.3071348940914159,
+              0.05362318840579716
+            ]
+          },
+          "must_not_caught": {
+            "n": 2,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 30,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 30,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "enterprise": {
+        "n": 8,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 8,
+            "value": 0.875,
+            "difference_vs_rest": -0.04166666666666663,
+            "difference_ci95": [
+              -0.34594594594594597,
+              0.14864864864864868
+            ]
+          },
+          "urgency_exact": {
+            "n": 8,
+            "value": 0.5,
+            "difference_vs_rest": 0.06944444444444442,
+            "difference_ci95": [
+              -0.36349206349206353,
+              0.4735812133072407
+            ]
+          },
+          "urgency_within_one": {
+            "n": 8,
+            "value": 0.875,
+            "difference_vs_rest": 0.02777777777777779,
+            "difference_ci95": [
+              -0.31803278688524594,
+              0.22535211267605637
+            ]
+          },
+          "must_not_caught": {
+            "n": 1,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 8,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 8,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "standard": {
+        "n": 42,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 42,
+            "value": 0.9285714285714286,
+            "difference_vs_rest": 0.03383458646616544,
+            "difference_ci95": [
+              -0.06789716545814106,
+              0.15384615384615385
+            ]
+          },
+          "urgency_exact": {
+            "n": 42,
+            "value": 0.4523809523809524,
+            "difference_vs_rest": 0.03132832080200504,
+            "difference_ci95": [
+              -0.16249999999999998,
+              0.22410865874363328
+            ]
+          },
+          "urgency_within_one": {
+            "n": 42,
+            "value": 0.9047619047619048,
+            "difference_vs_rest": 0.11528822055137844,
+            "difference_ci95": [
+              -0.029279279279279313,
+              0.26244665718349935
+            ]
+          },
+          "must_not_caught": {
+            "n": 11,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 42,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 42,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    },
+    "customer_region": {
+      "asia_pacific": {
+        "n": 21,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 21,
+            "value": 0.8571428571428571,
+            "difference_vs_rest": -0.07506053268765134,
+            "difference_ci95": [
+              -0.24641148325358853,
+              0.06557377049180324
+            ]
+          },
+          "urgency_exact": {
+            "n": 21,
+            "value": 0.5714285714285714,
+            "difference_vs_rest": 0.1815980629539951,
+            "difference_ci95": [
+              -0.07421289355322336,
+              0.4154135338345865
+            ]
+          },
+          "urgency_within_one": {
+            "n": 21,
+            "value": 0.9047619047619048,
+            "difference_vs_rest": 0.07425343018563357,
+            "difference_ci95": [
+              -0.0636363636363636,
+              0.18518518518518523
+            ]
+          },
+          "must_not_caught": {
+            "n": 2,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 21,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 21,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "europe": {
+        "n": 25,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 25,
+            "value": 0.96,
+            "difference_vs_rest": 0.06909090909090909,
+            "difference_ci95": [
+              -0.05882352941176472,
+              0.19380987472365518
+            ]
+          },
+          "urgency_exact": {
+            "n": 25,
+            "value": 0.48,
+            "difference_vs_rest": 0.06181818181818183,
+            "difference_ci95": [
+              -0.15729047072330654,
+              0.2886904761904762
+            ]
+          },
+          "urgency_within_one": {
+            "n": 25,
+            "value": 0.8,
+            "difference_vs_rest": -0.07272727272727264,
+            "difference_ci95": [
+              -0.23333333333333328,
+              0.08252740167633787
+            ]
+          },
+          "must_not_caught": {
+            "n": 4,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 25,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 25,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "latin_america": {
+        "n": 7,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 7,
+            "value": 1.0,
+            "difference_vs_rest": 0.09589041095890416,
+            "difference_ci95": [
+              0.026666666666666616,
+              0.18055555555555558
+            ]
+          },
+          "urgency_exact": {
+            "n": 7,
+            "value": 0.2857142857142857,
+            "difference_vs_rest": -0.16634050880626222,
+            "difference_ci95": [
+              -0.5384615384615384,
+              0.2848484848484849
+            ]
+          },
+          "urgency_within_one": {
+            "n": 7,
+            "value": 1.0,
+            "difference_vs_rest": 0.1643835616438356,
+            "difference_ci95": [
+              0.06944444444444442,
+              0.2584269662921348
+            ]
+          },
+          "must_not_caught": {
+            "n": 3,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 7,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 7,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "north_america": {
+        "n": 27,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 27,
+            "value": 0.8888888888888888,
+            "difference_vs_rest": -0.03563941299790363,
+            "difference_ci95": [
+              -0.1824561403508771,
+              0.08412698412698416
+            ]
+          },
+          "urgency_exact": {
+            "n": 27,
+            "value": 0.3333333333333333,
+            "difference_vs_rest": -0.15723270440251574,
+            "difference_ci95": [
+              -0.37373737373737376,
+              0.03968253968253971
+            ]
+          },
+          "urgency_within_one": {
+            "n": 27,
+            "value": 0.8148148148148148,
+            "difference_vs_rest": -0.05310971348707205,
+            "difference_ci95": [
+              -0.21791767554479413,
+              0.09999999999999998
+            ]
+          },
+          "must_not_caught": {
+            "n": 5,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 27,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 27,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    },
+    "language_fluency": {
+      "fluent": {
+        "n": 61,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 61,
+            "value": 0.9016393442622951,
+            "difference_vs_rest": -0.04572907679033644,
+            "difference_ci95": [
+              -0.14814814814814814,
+              0.06048387096774188
+            ]
+          },
+          "urgency_exact": {
+            "n": 61,
+            "value": 0.3770491803278688,
+            "difference_vs_rest": -0.2545297670405522,
+            "difference_ci95": [
+              -0.5049751243781095,
+              0.023076923076923106
+            ]
+          },
+          "urgency_within_one": {
+            "n": 61,
+            "value": 0.8360655737704918,
+            "difference_vs_rest": -0.05867126833477132,
+            "difference_ci95": [
+              -0.23804347826086947,
+              0.14777327935222673
+            ]
+          },
+          "must_not_caught": {
+            "n": 11,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 61,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 61,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "non_fluent": {
+        "n": 19,
+        "metrics": {
+          "intent_accuracy": {
+            "n": 19,
+            "value": 0.9473684210526315,
+            "difference_vs_rest": 0.04572907679033644,
+            "difference_ci95": [
+              -0.06321839080459768,
+              0.15094339622641506
+            ]
+          },
+          "urgency_exact": {
+            "n": 19,
+            "value": 0.631578947368421,
+            "difference_vs_rest": 0.2545297670405522,
+            "difference_ci95": [
+              -0.015873015873015872,
+              0.48916408668730643
+            ]
+          },
+          "urgency_within_one": {
+            "n": 19,
+            "value": 0.8947368421052632,
+            "difference_vs_rest": 0.05867126833477132,
+            "difference_ci95": [
+              -0.1454545454545454,
+              0.23360107095046856
+            ]
+          },
+          "must_not_caught": {
+            "n": 3,
+            "value": 1.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "auto_respond_rate": {
+            "n": 19,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsafe_auto_rate": {
+            "n": 19,
+            "value": 0.0,
+            "difference_vs_rest": 0.0,
+            "difference_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -85,7 +85,7 @@ def test_run_evaluation_writes_results_and_metrics_without_label_leakage(tmp_pat
             "route": "escalate",
             "retrieved_sources": [],
             "citations": [],
-            "latency_seconds": 0.4,
+            "latency_seconds": None,
         }
 
     report = run_evaluation(
@@ -109,7 +109,9 @@ def test_run_evaluation_writes_results_and_metrics_without_label_leakage(tmp_pat
     assert report["technical"]["citation_document_match_rate"] == 1.0
     assert report["governance"]["urgency_label_conflicts"]["conflicting_duplicate_text_groups"] == 1
     assert report["governance"]["urgency_label_conflicts"]["tickets_in_conflicting_groups"] == 2
-    assert report["technical"]["latency_seconds"]["median"] == pytest.approx(0.3)
+    latency = report["technical"]["latency_seconds"]
+    assert latency["measured_tickets"] == 2  # TEST-2 falls back to the harness-measured value
+    assert latency["median"] >= 0.1
     assert report["business"]["historical_baseline"]["first_contact_resolution_rate"] == 0.5
     assert report["business"]["system_first_contact_resolution"] is None
     assert saved_report["run_info"]["system_version"] == "test-1"

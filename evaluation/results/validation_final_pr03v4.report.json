@@ -1,6 +1,6 @@
 {
   "run_info": {
-    "run_at_utc": "2026-11-10T16:31:44.695991+00:00",
+    "run_at_utc": "2026-11-11T09:34:44.370869+00:00",
     "system_version": "0.2-pr03v4",
     "tickets_in_input": 80,
     "tickets_processed": 80,
@@ -200,9 +200,9 @@
     "citation_document_match_rate": 0.7872340425531915,
     "citation_document_match_note": "Document-ID match is a proxy; sentence-level citation support requires human review.",
     "latency_seconds": {
-      "median": null,
-      "p95": null,
-      "measured_tickets": 0
+      "median": 6.269144999999995,
+      "p95": 55.77045029199999,
+      "measured_tickets": 80
     }
   },
   "governance": {

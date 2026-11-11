@@ -1,7 +1,7 @@
 """Cluster-bootstrap confidence intervals and a fairness breakdown for development predictions.
 
-Development tickets only; stored classifier predictions are reused, so no model calls are
-made. Paraphrases of one scenario are near-duplicates, so tickets are resampled by scenario
+Stored classifier predictions are reused, so no model calls are made. Development tickets by
+default; the frozen validation run can be analysed once with ``--allow-validation --results``. Paraphrases of one scenario are near-duplicates, so tickets are resampled by scenario
 cluster (not individually); intervals from naive per-ticket resampling would be too narrow.
 
 Reports 95% percentile intervals for headline metrics and, for each customer attribute
@@ -119,21 +119,30 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tickets", type=Path, default=EVAL_DIR / "data" / "development_tickets.json")
     parser.add_argument("--predictions", type=Path, default=EVAL_DIR / "calibration" / "development_predictions.jsonl")
+    parser.add_argument("--results", type=Path, help="evaluation results JSONL to use instead of --predictions")
+    parser.add_argument("--allow-validation", action="store_true", help="permit validation tickets (final analysis only)")
     parser.add_argument("--calibration", type=Path, default=EVAL_DIR / "calibration" / "calibration-v2.json")
+    parser.add_argument("--calibration-off", action="store_true", help="route without a calibration artifact (as the frozen run did)")
     parser.add_argument("--output", type=Path, default=EVAL_DIR / "results" / "development_accuracy_uncertainty.json")
     parser.add_argument("--reps", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=20261106)
     args = parser.parse_args()
     if "validation" in args.tickets.name.lower():
-        parser.error("This analysis must not use the validation tickets.")
+        if not (args.allow_validation and args.results and args.calibration_off):
+            parser.error("Validation tickets need --allow-validation, --results and --calibration-off.")
+        if args.output == EVAL_DIR / "results" / "development_accuracy_uncertainty.json":
+            parser.error("Pass an explicit --output for validation tickets.")
 
     records = load_ticket_records(args.tickets)
     predictions = {}
-    for line in args.predictions.read_text(encoding="utf-8").splitlines():
+    for line in (args.results or args.predictions).read_text(encoding="utf-8").splitlines():
         if line.strip():
             row = json.loads(line)
+            if args.results:  # evaluation results nest the classification under "result"
+                row = {**(row["result"] or {}), "ticket_id": row["ticket_id"], "error": row["error"]} if row["result"] else {**row, "error": row["error"] or "no result"}
             predictions[row["ticket_id"]] = row
-    facts = ticket_facts(records, predictions, load_artifact(args.calibration))
+    artifact = None if args.calibration_off else load_artifact(args.calibration)
+    facts = ticket_facts(records, predictions, artifact)
     clusters = [[i for i in c if i in facts] for c in scenario_clusters(records)]
     clusters = [c for c in clusters if c]
     rng = random.Random(args.seed)

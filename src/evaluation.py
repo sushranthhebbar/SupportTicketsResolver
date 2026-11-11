@@ -236,7 +236,10 @@ def build_metrics(
         action = result.get("action") or result.get("route")
         if isinstance(action, str):
             action_counts[action] += 1
-        latency = result.get("latency_seconds", row.get("latency_seconds"))
+        # The pipeline reports latency_seconds=None; fall back to the harness-measured value.
+        latency = result.get("latency_seconds")
+        if not isinstance(latency, (int, float)):
+            latency = row.get("latency_seconds")
         if isinstance(latency, (int, float)):
             latency_values.append(float(latency))
 
