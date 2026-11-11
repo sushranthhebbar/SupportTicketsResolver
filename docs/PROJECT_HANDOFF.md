@@ -125,7 +125,7 @@ The project note says a prior Groq one-request JSON-mode smoke check succeeded w
 1. Confirm the intended data-access, reviewer-identity, retention, incident-response, and AI disclosure policy before any real deployment. The current shared token is a local prototype control, not multi-agent identity management.
 2. Complete/update the PRD revision log based on discoveries during implementation and ensure requirements map to code/tests.
 3. Complete the risk register, fairness audit, final evaluation report, and effort log. Record which figures are historical baselines, validation results, human-reviewed proxies, or unavailable.
-4. Prepare the required demonstration video and archive using the exact folder/file rules in [Submission Guide](reference/04_Submission/Submission_Guide.docx). The guide lists a 13 September deadline; it is older than this snapshot, so confirm the active deadline with the course owner.
+4. Prepare the required demonstration video and archive using the exact folder/file rules in [Submission Guide](reference/04_Submission/Submission_Guide.docx). The guide lists a 13 September deadline, which is outdated; the active deadline is **22 November** (confirmed by the author on 2026-11-11).
 
 ## 8. How to run locally
 
