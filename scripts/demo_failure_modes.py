@@ -73,6 +73,8 @@ def main() -> int:
     show("run finished, report written", f"rows={len(rows_)} errors={sum(1 for r in rows_ if r['error'])}")
     rows = [json.loads(line) for line in (TMP / "out.jsonl").read_text().splitlines()]
     show("per-ticket error recorded", rows[0]["error"]["type"])
+    live = process_ticket(ticket("FM-011"), database_url=DB, degrade_on_classifier_failure=True)
+    show("provider down at classification (live intake)", f"route={live['route']} intent={live['intent']} error={live['classification_error']}")
     result = process_ticket(ticket("FM-010"), classifier=lambda _t: CLASSIFICATION, database_url=DB, retriever=lambda _q: [SOURCE])
     show("provider down at drafting stage (live)", f"answer_status={result['answer_status']} route={result['route']} next={result['recommended_next_step']}")
 

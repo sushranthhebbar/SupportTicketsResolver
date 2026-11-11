@@ -348,3 +348,26 @@ def test_ticket_with_instruction_like_text_is_blocked():
     assert blocked["action"] == "block"
     assert blocked["guardrail_results"]["input_integrity"]["matched"] == ["instruction_like_text"]
     assert check_ticket_input("Rate limits", "How do API rate limits work?") is None
+
+
+def test_degraded_intake_routes_to_review_and_log_reconciles(tmp_path):
+    from src.logging_store import connect
+
+    database_url = f"sqlite:///{tmp_path / 'degraded.db'}"
+
+    def failing_classifier(_ticket):
+        raise ConnectionError("provider unreachable")
+
+    result = process_ticket(
+        _ticket(),
+        classifier=failing_classifier,
+        database_url=database_url,
+        degrade_on_classifier_failure=True,
+    )
+    assert result["route"] == "review"
+    assert result["intent"] is None
+    assert result["classification_error"] == "ConnectionError"
+    connection = connect(database_url)
+    rows = connection.execute("SELECT stage, action_taken FROM decisions ORDER BY rowid").fetchall()
+    connection.close()
+    assert [tuple(r) for r in rows] == [("classification", "error"), ("routing", "review")]

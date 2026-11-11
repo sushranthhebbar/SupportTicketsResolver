@@ -157,7 +157,10 @@ was made before this check existed, and it would not have changed any of its 80 
 | No retrieval hit | Retriever returns nothing, or raises | `needs_human`, route `review` |
 | Malformed input | One ticket with an unsupported channel and no text in a file of three | **Found a gap:** the whole run stopped on the first invalid record. Fixed: the harness now skips invalid records, lists them (id and reason) under `run_info.rejected_tickets` and processes the rest. Test added. |
 
-Limit: if the provider is down at classification, the ticket has no intent or route in
-the pipeline result. The harness records the error and a resumed run retries it, but no
-live intake path yet puts such a ticket into the agent queue. A real deployment should
-route it to review.
+Provider down at classification: `process_ticket(..., degrade_on_classifier_failure=True)`
+logs the `error` row, then a `routing` row (`review`, "Classification unavailable; human
+review required") and returns a review result with no intent. Review rather than escalate,
+because without an intent a must-not ticket cannot be told apart. The option is off by
+default and the evaluation harness does not use it, so a failed ticket stays an error
+there and is retried on `--resume` instead of being scored as a prediction. No live intake
+path exists in the prototype, so nothing calls the option outside the demo and tests.

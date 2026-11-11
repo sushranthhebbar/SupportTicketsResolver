@@ -31,6 +31,7 @@ def process_ticket(
     generate_answer: bool = True,
     ticket_history: Sequence[str | Mapping[str, Any]] | None = None,
     troubleshooting_attempted: Sequence[str] | None = None,
+    degrade_on_classifier_failure: bool = False,
 ) -> dict[str, Any]:
     """Classify, route, optionally draft a grounded reply, and persist decisions.
 
@@ -54,7 +55,40 @@ def process_ticket(
             },
             database_url,
         )
-        raise
+        if not degrade_on_classifier_failure:
+            raise
+        # Live intake: a ticket must not vanish when the provider is down. Without an
+        # intent it cannot be told apart from a must-not ticket, so a person reviews it.
+        reason = "Classification unavailable; human review required."
+        log_decision(
+            {
+                "ticket_id": ticket.ticket_id,
+                "stage": "routing",
+                "input_summary": f"Ticket {ticket.ticket_id} received on {ticket.channel}.",
+                "prediction_value": "review",
+                "action_taken": "review",
+                "reason": reason,
+                "prompt_version": CLASSIFIER_PROMPT_VERSION,
+                "requirement_ids": ["FR-07", "FR-09"],
+            },
+            database_url,
+        )
+        return {
+            "intent": None,
+            "urgency": None,
+            "route": "review",
+            "action": "review",
+            "reason": reason,
+            "classification_error": type(exc).__name__,
+            "answer_status": "not_generated",
+            "answer": "",
+            "citations": [],
+            "retrieved_sources": [],
+            "guardrail_results": {},
+            "escalation_summary": None,
+            "advisory_urgency": None,
+            "latency_seconds": None,
+        }
     calibration_version = None
     if calibrated_confidence is None:
         artifact = configured_artifact()
