@@ -319,3 +319,6 @@ Cluster-bootstrap intervals and a group breakdown are in `docs/accuracy_uncertai
 - Report wording: the automatic citation check is a retrieval check only; `docs/validation_draft_review.md` is one informal read (39 sound, 7 minor, 4 would mislead a skimming reviewer) and must not be presented as a measured rate.
 - Kit kept for later: `evaluation/human_review/` (packet, blank assessor sheets, README) and `scripts/score_draft_review.py`.
 - Stage 4 plan updated: Tuesday 17 November row reduced to 3 hours (tests and clean-checkout rehearsal); drop-list item 3 now covers the whole review.
+
+## Full test suite on Python 3.11 (13 November 2026)
+- The author ran `.venv311\Scripts\python.exe -m pytest tests -v` on Windows: all tests pass (68 by count of test functions: 62 that also run under Python 3.9, plus 4 in `test_agent_review_api.py` and 2 in `test_dashboard.py`). A12 is met. Report updated (Section 6, Table 6, Table E1 row removed).

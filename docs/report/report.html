@@ -183,7 +183,7 @@ CloudServe's support team is struggling to keep up with more than 500 tickets a 
 <div class="eyebrow">Section 6</div>
 <h2>Implementation</h2>
 <h3>6.1 How it was built</h3>
-<p>The repository was created on 26 October 2026. The first week went on the discovery workbook, the requirements, the prompt library and the sprint plan. In the second week I built the normaliser, the evaluation harness, the classifier and router, retrieval, grounded drafting with its guardrails, the escalation summary, the agent review page, outcome capture and the dashboard. The third week is for governance, this report and the video. The code has one module per job (<i>tickets</i>, <i>classification</i>, <i>routing</i>, <i>retrieve</i>, <i>answering</i>, <i>guardrails</i>, <i>escalation</i>, <i>pipeline</i>, <i>evaluation</i> and the stores), so each can be tested alone. The tests run with <i>python -m pytest tests -v</i>; 62 of them run under Python 3.9 and pass, and two files, for the review API and the dashboard, need Python 3.11.</p>
+<p>The repository was created on 26 October 2026. The first week went on the discovery workbook, the requirements, the prompt library and the sprint plan. In the second week I built the normaliser, the evaluation harness, the classifier and router, retrieval, grounded drafting with its guardrails, the escalation summary, the agent review page, outcome capture and the dashboard. The third week is for governance, this report and the video. The code has one module per job (<i>tickets</i>, <i>classification</i>, <i>routing</i>, <i>retrieve</i>, <i>answering</i>, <i>guardrails</i>, <i>escalation</i>, <i>pipeline</i>, <i>evaluation</i> and the stores), so each can be tested alone. The tests run with <i>python -m pytest tests -v</i>. Under Python 3.11 the full suite of 68 tests passes.</p>
 <p>The evaluation harness takes an input path and an output path as arguments, because the final assessment runs it on a file I have not seen. A failing ticket is recorded as an error and the run continues. The harness writes one result row per ticket, builds a metrics report, and can resume an interrupted run by reusing the tickets already done. The resume feature turned out to be essential.</p>
 <h3>6.2 What was hard</h3>
 <p><b>The model provider.</b> My first full run, on 1 November, finished 6 of 80 tickets before the free provider began answering HTTP 429, "too many requests". After moving to Groq on 2 November the first attempt reached 18 tickets. I added pacing between requests, retries that wait for the reset time the provider states, and the resumable run. The final validation run still took two sessions on two days because of the daily token allowance, so the criterion of a single unattended run is not strictly met on the free tier.</p>
@@ -245,7 +245,7 @@ CloudServe's support team is struggling to keep up with more than 500 tickets a 
 <tr><td>A9</td><td>Single unattended run</td><td>Not strictly met. Two resumed sessions on the free tier</td></tr>
 <tr><td>A10</td><td>Metrics report produced</td><td>Met. Business and hallucination fields are empty by design</td></tr>
 <tr><td>A11</td><td>Failure handled</td><td>Met for provider disconnection, rejected key, timeout, rate limit, empty retrieval and malformed input (Section 8.5)</td></tr>
-<tr><td>A12</td><td>Tests pass with one command</td><td>62 pass under Python 3.9; two files need 3.11 (Appendix E)</td></tr>
+<tr><td>A12</td><td>Tests pass with one command</td><td>Met. All 68 tests pass under Python 3.11 with the documented command</td></tr>
 </tbody></table>
 <h3>7.9 What I did not measure</h3>
 <p>I did not measure the hallucination rate or citation accuracy, because that needs two people to judge the drafts and I did not arrange it. I did not measure first contact resolution, reply time or satisfaction, since there was no pilot. I did not run an unpaced latency test, a load test or a cost per ticket. I did not run the hidden set. Groups of 8 to 61 tickets cannot show a gap smaller than about 20 points, so "no evidence of a gap" in Section 8 is a weaker statement than "no gap".</p>
@@ -405,7 +405,6 @@ CloudServe's support team is struggling to keep up with more than 500 tickets a 
 <table><caption>Table E1. Not yet checked</caption>
 <thead><tr><th style="width:28%">Item</th><th>State</th></tr></thead><tbody>
 <tr><td>Clean checkout (A1)</td><td>I have not yet cloned the repository into an empty directory on a second machine and followed the README step by step.</td></tr>
-<tr><td>Full test suite (A12)</td><td>62 tests pass under Python 3.9. The review API and dashboard tests need Python 3.11 and have not been run for this report.</td></tr>
 <tr><td>Deterministic routing (A5)</td><td>The router is a pure function and the model is called at temperature 0, but I did not run the same live ticket twice to confirm identical decisions.</td></tr>
 <tr><td>Hidden evaluation set</td><td>Not provided to me and not run.</td></tr>
 <tr><td>Kill switch</td><td>Restart-to-stop was not tested as a switch.</td></tr>
