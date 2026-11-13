@@ -4,6 +4,7 @@
 <h3>8.1 Decision logging</h3>
 <p>Every ticket writes a classification row and a routing row, plus either a drafting row or an escalation-summary row, and agent actions add a review row. The log holds every field in the framework's minimum record. On the final validation run it reconciles exactly: 80 tickets, 80 classification rows, 80 routing rows, 63 drafting rows and 17 escalation rows, so every ticket has a draft or a summary and none has both. Three weaknesses remain. The list of alternatives is never filled, because the classifier returns one label. The drafting row stores the full ticket text and passages so that the review page can show them, which means access to the database needs a retention rule that CloudServe has not set. And before my coverage check a classifier failure left no row at all; it now writes an error row.</p>
 <h3>8.2 Risk register</h3>
+<p>Table 7 lists the eight risks I assessed, with the mitigation for each and what that mitigation does not cover.</p>
 <table><caption>Table 7. Risk register (likelihood and impact are my own ratings)</caption>
 <thead><tr><th style="width:6%">ID</th><th style="width:17%">Risk</th><th style="width:12%">Likelihood / impact</th><th>Mitigation, and what it does not cover</th><th style="width:13%">Owner</th></tr></thead><tbody>
 <tr><td>R-01</td><td>Confident, wrong answer</td><td>Medium / High</td><td>No send path; every draft reviewed; answers cite retrieved sources; four intents always escalate. Not covered: the automatic checks pass drafts like VAL-0049, and the hallucination rate is unmeasured.</td><td>Sushranth Hebbar</td></tr>
@@ -19,13 +20,13 @@
 <p>I compared the segments the framework lists on the 80 validation tickets. The quality score is intent accuracy. Resolution rate is unavailable because the prototype resolves nothing. The intervals in Table 8 treat tickets as independent, so they are narrower than the scenario-based intervals elsewhere.</p>
 <table><caption>Table 8. Segment audit on validation (Wilson 95% intervals; variation in points from the best segment)</caption>
 <thead><tr><th>Segment</th><th>Tickets</th><th>Intent accuracy</th><th>Variation</th><th>Retrieval hit</th><th>Draft ready</th></tr></thead><tbody>
-<tr><td>Enterprise</td><td>8</td><td>88% (53 to 98)</td><td>-7</td><td>100% (6/6)</td><td>88%</td></tr>
-<tr><td>Business</td><td>30</td><td>90% (74 to 97)</td><td>-5</td><td>100% (22/22)</td><td>73%</td></tr>
-<tr><td>Standard</td><td>42</td><td>93% (81 to 98)</td><td>-2</td><td>96% (24/25)</td><td>50%</td></tr>
-<tr><td>Fluent English</td><td>61</td><td>90% (80 to 95)</td><td>-5</td><td>98% (43/44)</td><td>62%</td></tr>
+<tr><td>Enterprise</td><td>8</td><td>88% (53 to 98)</td><td>&minus;7</td><td>100% (6/6)</td><td>88%</td></tr>
+<tr><td>Business</td><td>30</td><td>90% (74 to 97)</td><td>&minus;5</td><td>100% (22/22)</td><td>73%</td></tr>
+<tr><td>Standard</td><td>42</td><td>93% (81 to 98)</td><td>&minus;2</td><td>96% (24/25)</td><td>50%</td></tr>
+<tr><td>Fluent English</td><td>61</td><td>90% (80 to 95)</td><td>&minus;5</td><td>98% (43/44)</td><td>62%</td></tr>
 <tr><td>Non-fluent English</td><td>19</td><td>95% (75 to 99)</td><td>best</td><td>100% (9/9)</td><td>63%</td></tr>
-<tr><td>Short (up to 24 words)</td><td>43</td><td>93% (81 to 98)</td><td>-2</td><td>96% (27/28)</td><td>65%</td></tr>
-<tr><td>Long (over 24 words)</td><td>37</td><td>89% (75 to 96)</td><td>-6</td><td>100% (25/25)</td><td>59%</td></tr>
+<tr><td>Short (up to 24 words)</td><td>43</td><td>93% (81 to 98)</td><td>&minus;2</td><td>96% (27/28)</td><td>65%</td></tr>
+<tr><td>Long (over 24 words)</td><td>37</td><td>89% (75 to 96)</td><td>&minus;6</td><td>100% (25/25)</td><td>59%</td></tr>
 </tbody></table>
 <p>No intent or retrieval gap stands out from the noise. The framework expects retrieval to do worse for non-fluent English, and here it did not: those tickets scored best on intent and retrieved the expected article in all 9 answerable cases. With 19 tickets I could not see a gap smaller than about 20 points. The draft-ready rate varies by tier (88%, 73%, 50%), and the reason is the mix of tickets: 11 of the 14 must-escalate tickets in the set are standard tier, and those never get a draft. Enterprise has only 8 tickets, so its row proves nothing either way. On the development set, chat and Europe looked 10 points worse on intent, but both gaps traced to a few scenarios and did not appear on validation, where chat matches the rest and Europe is 7 points higher. I did not test whether drafts differ in correctness or tone by group.</p>
 <h3>8.4 Guardrails and the demonstration</h3>
@@ -34,6 +35,7 @@
 <h3>8.5 Failure handling</h3>
 <p>I induced each failure the specification names. With the provider's address pointed at a closed port, a two-ticket run finished and logged both errors; a disconnection during drafting produced a note for a human to retry later. A rejected key, a timeout and rate limiting (the last two simulated, with retries) gave the same safe result. An empty retrieval and a retrieval crash each produced a note for review. One malformed ticket in a file of three stopped the whole run, which was a defect; the harness now skips invalid records, lists them and processes the rest. When classification is unavailable, an option sends the ticket to review with no intent and writes a routing row, so the log still reconciles. Nothing in the prototype uses that option yet, since there is no live intake.</p>
 <h3>8.6 Incident procedure and kill switch</h3>
+<p>Table 9 sets out the incident procedure step by step.</p>
 <table><caption>Table 9. Incident procedure</caption>
 <thead><tr><th style="width:13%">Step</th><th>What to do</th><th style="width:18%">Who</th></tr></thead><tbody>
 <tr><td>1. Detect</td><td>An agent reports a wrong or unsafe draft, the dashboard shows more blocked or insufficient-evidence outcomes, or the decision log stops reconciling with tickets processed. Note the ticket ID.</td><td>Any agent; the owner reviews the dashboard daily in a pilot</td></tr>

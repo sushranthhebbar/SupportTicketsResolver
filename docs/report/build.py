@@ -15,9 +15,9 @@ NAVY, BLUE, AMBER = "#1e3a5f", "#2563eb", "#d97706"
 
 CSS = f"""
 @page {{ size: A4; margin: 25mm 21mm 23mm 21mm;
-  @top-left {{ content: "A support assistant for CloudServe"; font: 8pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #8a94a6; }}
-  @top-right {{ content: "Capstone report"; font: 8pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #8a94a6; }}
-  @bottom-left {{ content: "Sushranth Hebbar"; font: 8pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #8a94a6; }}
+  @top-left {{ content: "A support assistant for CloudServe Solutions"; font: 8pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #8a94a6; }}
+  @top-right {{ content: "Capstone project report"; font: 8pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #8a94a6; }}
+  @bottom-left {{ content: "Sushranth Hebbar  ·  Forward Deployed AI Engineering"; font: 8pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #8a94a6; }}
   @bottom-right {{ content: counter(page); font: 8.5pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: {NAVY}; }} }}
 @page cover {{ margin: 0; @top-left {{ content: none; }} @top-right {{ content: none; }} @bottom-left {{ content: none; }} @bottom-right {{ content: none; }} }}
 * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
@@ -52,14 +52,22 @@ figcaption b {{ color: {NAVY}; }}
 .cover h1 {{ font: 700 34pt/1.12 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 10pt 0 12pt 0; }}
 .cover .sub {{ font: 13pt/1.45 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #d6e0f0; max-width: 135mm; }}
 .cover .rule {{ height: 5px; background: {AMBER}; }}
-.cover .meta {{ padding: 16mm 24mm; font: 11pt/1.8 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1c2430; }}
-.cover .meta .n {{ font-size: 15pt; font-weight: 700; color: {NAVY}; }}
+.cover .meta {{ padding: 14mm 24mm; font: 11pt/1.8 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1c2430; }}
+.cover .meta .n {{ font-size: 17pt; font-weight: 700; color: {NAVY}; line-height: 1.3; }}
+.cover .meta .role {{ font-size: 10.5pt; color: #4b5565; margin-bottom: 12mm; }}
+.cover table.docmeta {{ width: 100%; font: 9.6pt/1.5 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; }}
+.cover table.docmeta td {{ border-bottom: 1px solid #e3e7ee; padding: 5pt 0; background: none !important; }}
+.cover table.docmeta td:first-child {{ width: 42mm; color: #8a94a6; font-weight: 600; text-transform: uppercase; font-size: 7.8pt; letter-spacing: 1px; }}
+.cover .foot {{ position: absolute; bottom: 16mm; left: 24mm; right: 24mm; font: 8.6pt/1.5 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #8a94a6; border-top: 1px solid #e3e7ee; padding-top: 6pt; }}
 .toc h1 {{ font: 700 23pt 'Helvetica Neue', Helvetica, Arial, sans-serif; color: {NAVY}; margin: 0 0 14pt 0; padding-bottom: 8pt; border-bottom: 2.5px solid {AMBER}; }}
 .toc .row {{ display: flex; align-items: baseline; font: 10.8pt/2.0 'Helvetica Neue', Helvetica, Arial, sans-serif; }}
 .toc .row .t {{ flex: 0 1 auto; }} .toc .row .d {{ flex: 1; border-bottom: 1px dotted #9aa4b5; margin: 0 6pt; transform: translateY(-3pt); }} .toc .row .p {{ color: {NAVY}; font-weight: 600; }}
 .toc .sec {{ font-weight: 600; color: {NAVY}; }}
 .toc .sub .t {{ color: #4b5565; padding-left: 12pt; }}
 .toc p.note {{ font: 9.2pt/1.5 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #4b5565; margin-top: 18pt; border-top: 1px solid #e3e7ee; padding-top: 8pt; }}
+.toc h1.lof {{ margin-top: 0; }}
+.toc .grp {{ font: 600 8.5pt 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 1.6px; text-transform: uppercase; color: {AMBER}; margin: 12pt 0 2pt 0; }}
+.toc .row.cap {{ font-size: 9.6pt; line-height: 1.75; }} .toc .row.cap .t {{ color: #1c2430; }} .toc .row.cap .t b {{ color: {NAVY}; font-weight: 600; display: inline-block; width: 19mm; }}
 .appendix h2 {{ border-bottom-color: #8a94a6; }}
 """
 
@@ -72,7 +80,7 @@ TOC = [
     ("aC", "", "Appendix C. Requirement traceability", True), ("aD", "", "Appendix D. Workbooks and reproduction", True),
     ("aE", "", "Appendix E. Open items and uncertainties", True),
 ]
-ORDER = ["cover", "toc", "s01", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10", "s11", "s12"]
+ORDER = ["cover", "toc", "lof", "s01", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10", "s11", "s12"]
 
 
 def toc_html(pages):
@@ -85,6 +93,32 @@ def toc_html(pages):
             "500 development tickets (analysis and design decisions), 80 validation tickets (final comparison, never used for tuning), "
             "and a hidden set of 120 tickets that I was not given. Appendix E lists what is unmeasured or not yet checked.</p>")
     return f"<div class='toc' style='page-break-after: always'><h1>Contents</h1>{''.join(rows)}{note}</div>"
+
+
+def captions():
+    """(label, short title) for every numbered table and figure, in document order."""
+    caps = []
+    for name in ORDER:
+        f = HERE / "sections" / f"{name}.html"
+        if not f.exists():
+            continue
+        text = f.read_text(encoding="utf-8").replace("{{perclass}}", "<caption>Table B1. Intent classification per class, validation set (80 tickets, final run)</caption>")
+        for m in re.finditer(r"<caption>((?:Table) [A-Z]?\d+)\. (.*?)</caption>|<figcaption><b>(Figure \d+)\.</b> (.*?)</figcaption>", text, re.S):
+            label, title = (m.group(1), m.group(2)) if m.group(1) else (m.group(3), m.group(4))
+            title = re.sub(r"<[^>]+>", "", title).strip()
+            if m.group(3):
+                title = title.split(". ")[0].split(" (")[0].rstrip(".")
+            caps.append((label, title))
+    return caps
+
+
+def lof_html(pages):
+    caps = captions()
+    def rows(kind):
+        return "".join(f"<div class='row cap'><span class='t'><b>{l}</b>{t}</span><span class='d'></span><span class='p'>{pages.get(l, '')}</span></div>"
+                       for l, t in caps if l.startswith(kind))
+    return (f"<div class='toc' style='page-break-after: always'><h1 class='lof'>Figures and tables</h1>"
+            f"<div class='grp'>Figures</div>{rows('Figure')}<div class='grp'>Tables</div>{rows('Table')}</div>")
 
 
 def find_pages(pdf_path):
@@ -108,6 +142,11 @@ def find_pages(pdf_path):
             if hit:
                 pages[sid] = i + 1
                 break
+    for label, _ in captions():
+        for i in range(start, len(doc)):
+            if any(ln.startswith(label + ". ") for ln in lines_by_page[i]):
+                pages[label] = i + 1
+                break
     return pages
 
 
@@ -122,6 +161,8 @@ def build(pages):
     for name in ORDER:
         if name == "toc":
             parts.append(toc_html(pages)); continue
+        if name == "lof":
+            parts.append(lof_html(pages)); continue
         text = (HERE / "sections" / f"{name}.html").read_text(encoding="utf-8")
         for k, v in subs.items():
             text = text.replace(k, v)

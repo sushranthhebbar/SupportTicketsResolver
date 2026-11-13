@@ -1,7 +1,7 @@
 <div class="appendix">
 <div class="eyebrow">Appendix A</div>
 <h2>Appendix A. Prompt register</h2>
-<table>
+<table><caption>Table A1. Prompt register: purpose, version history and the version in use</caption>
 <thead><tr><th style="width:8%">ID</th><th style="width:28%">Purpose</th><th>Versions</th><th style="width:10%">In use</th></tr></thead><tbody>
 <tr><td>PR-01</td><td>Design-time prompt used while planning</td><td>V1.0, no later revisions</td><td>No</td></tr>
 <tr><td>PR-02</td><td>Grounded reply drafter: answer only from the retrieved passages, cite each claim inline, say when evidence is insufficient</td><td>V1.0 initial. V2.0 (3 November 2026): inline citations and the structured list must match; stored citations come only from inline identifiers checked against the retrieved sources</td><td>v2.0</td></tr>
@@ -30,7 +30,7 @@
 <tr><td>All</td><td>80</td><td>6.3 s</td><td>55.8 s</td><td>21</td></tr></tbody></table>
 
 <h2 class="pb">Appendix C. Requirement traceability</h2>
-<table>
+<table><caption>Table C1. Each requirement traced to the code that implements it and the tests that cover it</caption>
 <thead><tr><th>Requirement</th><th>Code</th><th>Tests</th></tr></thead><tbody>
 <tr><td>FR-01 ticket and context</td><td>src/tickets.py, src/review_store.py</td><td>test_tickets, test_agent_review_api</td></tr>
 <tr><td>FR-02 documentation</td><td>src/retrieve.py</td><td>test_retrieve</td></tr>
@@ -52,7 +52,7 @@
 <p><b>Reproduction.</b> Install the requirements, copy <i>.env.example</i> to <i>.env</i> and add a model key. Run <i>python -m pytest tests -v</i> for the tests. Run <i>python scripts/run_evaluation.py --input &lt;tickets.json&gt; --output &lt;results.jsonl&gt; --processor src.pipeline:process_ticket</i> for an evaluation, adding <i>--resume</i> to continue an interrupted one, and <i>uvicorn src.app:app</i> for the review page. The demonstrations are <i>scripts/demo_guardrail_ticket.py</i> and <i>scripts/demo_failure_modes.py</i>.</p>
 
 <h2 class="pb">Appendix E. Open items and uncertainties</h2>
-<p>This appendix collects what I am not sure of, what I estimated, and what I have not yet checked. None of it is used in the main text as if it were established.</p>
+<p>This appendix collects what I am not sure of, what I estimated, and what I have not yet checked. None of it is used in the main text as if it were established. Table E1 lists the checks not yet made and Table E2 the estimates and judgements.</p>
 <table><caption>Table E1. Not yet checked</caption>
 <thead><tr><th style="width:28%">Item</th><th>State</th></tr></thead><tbody>
 <tr><td>Clean checkout (A1)</td><td>I have not yet cloned the repository into an empty directory on a second machine and followed the README step by step.</td></tr>
