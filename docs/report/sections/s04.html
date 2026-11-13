@@ -1,0 +1,32 @@
+<div class="eyebrow">Section 4</div>
+<h2>Requirements</h2>
+<p>I wrote the requirements document at the end of the first week and revised it after the build. The current version is 2.0, dated 11 November 2026, and version 1.0 of 31 October stays in the repository history. Each requirement has an identifier, a priority and the discovery finding it came from, and Appendix C ties each one to code and tests. Table 2 lists the functional requirements and where each stands.</p>
+<table><caption>Table 2. Functional requirements</caption>
+<thead><tr><th style="width:7%">ID</th><th>Requirement</th><th style="width:8%">Priority</th><th style="width:27%">Where it came from</th><th style="width:22%">Status</th></tr></thead><tbody>
+<tr><td>FR-01</td><td>Accept a ticket and show its available context to the agent</td><td>Must</td><td>Sofia's queue; Daniel rereading threads</td><td>Built</td></tr>
+<tr><td>FR-02</td><td>Find and show the relevant documentation</td><td>Must</td><td>71.4% answerable; Sofia and Ines on search</td><td>Built. Plan-scope check specified, not built</td></tr>
+<tr><td>FR-03</td><td>Draft a reply grounded in the shown documentation</td><td>Must</td><td>Sofia and Ravi want a source and a draft</td><td>Built. Subject-versus-body rule specified, not built</td></tr>
+<tr><td>FR-04</td><td>Agent reviews, edits, rejects or approves before anything is sent</td><td>Must</td><td>Marcus on wrong answers; Ravi on human confirmation</td><td>Built. No send path exists</td></tr>
+<tr><td>FR-05</td><td>Recognise insufficient evidence and recommend clarification or escalation</td><td>Must</td><td>Marcus, Sofia, Daniel</td><td>Built, with the four must-escalate intents</td></tr>
+<tr><td>FR-06</td><td>Prepare an escalation summary</td><td>Should</td><td>Daniel on missing context</td><td>Built</td></tr>
+<tr><td>FR-07</td><td>Record sources used and the agent's decision</td><td>Must</td><td>Marcus and Ines on traceability</td><td>Built</td></tr>
+<tr><td>FR-08</td><td>Capture outcomes and agent feedback</td><td>Should</td><td>First contact resolution as the key measure</td><td>Built. No pilot data yet</td></tr>
+<tr><td>FR-09</td><td>Label intent and urgency, each with a confidence</td><td>Must</td><td>Marcus has no ticket breakdown; spec A3</td><td>Built. Urgency advisory only</td></tr>
+</tbody></table>
+<table><caption>Table 3. Non-functional requirements</caption>
+<thead><tr><th style="width:9%">ID</th><th style="width:13%">Area</th><th>Requirement</th></tr></thead><tbody>
+<tr><td>NFR-01</td><td>Latency</td><td>95th percentile under 3 seconds end to end.</td></tr>
+<tr><td>NFR-02</td><td>Availability</td><td>Available in support hours with a recovery path. Targets still to be agreed.</td></tr>
+<tr><td>NFR-03</td><td>Accuracy</td><td>Hallucination rate 5% or lower and citation accuracy 95% or higher, established by human review. Automatic citation checks are retrieval checks only.</td></tr>
+<tr><td>NFR-04</td><td>Privacy</td><td>One customer's information never appears in another's ticket or reply.</td></tr>
+<tr><td>NFR-05</td><td>Auditability</td><td>Any assisted reply can be traced to its sources and the agent's decision, with access controlled.</td></tr>
+<tr><td>NFR-06</td><td>Fairness</td><td>A gap of under 5 percentage points between a customer group and the rest, estimated by resampling whole scenarios. Groups under about 25 tickets are inconclusive.</td></tr>
+<tr><td>NFR-07</td><td>Cost</td><td>Within an agreed limit per assisted ticket. Limit still to be agreed.</td></tr>
+<tr><td>NFR-08</td><td>Evaluation integrity</td><td>Supplied labels are never rewritten. Calibration is split by scenario. Prompt and policy choices are made on development data only. (Added in version 2.0.)</td></tr>
+</tbody></table>
+<h3>4.1 What is deliberately out of scope</h3>
+<p>The PRD lists what it does not build and why. There is no autonomous chatbot, because the head of support's worst case is a confident wrong answer and the customer wants a person to confirm. Agents are not replaced. The knowledge base is not rewritten, since most answerable tickets already have an article that retrieval finds. Agents' personal answer files are not used as sources, because Daniel warns they may be wrong. Tiers, service agreements and staffing are CloudServe's decisions.</p>
+<h3>4.2 Assumptions written down in advance</h3>
+<p>Version 1.0 recorded three assumptions: the documentation is usable as an answer source, tickets contain enough context for a useful draft, and agents will review drafts properly. Version 1.0 also rested on three that I had not written down, namely that a confidence score can decide which tickets get an automatic answer, that urgency can be predicted from the text and used to route, and that a free model provider can run the evaluation unattended. Section 9 reports how each of the six turned out.</p>
+<h3>4.3 Success measures</h3>
+<p>The measures in the PRD fall into two groups. The offline evaluation can report intent precision and recall, retrieval hit rate, a citation proxy, latency and group gaps. First contact resolution, time to first reply and satisfaction need a supervised pilot with real outcomes, so the evaluation reports them as unavailable and never fills them from the historical baseline. That is why this report cannot say whether the assistant improves CloudServe's first contact resolution.</p>

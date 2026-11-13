@@ -107,7 +107,7 @@ def latency():
         b.append(f"<rect x='{x}' y='{base - ht}' width='{bw}' height='{ht}' fill='{BLUE if lo < 10 else ORANGE}'/>")
         b.append(text(x + bw / 2, base - ht - 5, str(c), anchor="middle", size=11))
         b.append(text(x + bw / 2, base + 16, f"{lo}-{hi}", anchor="middle", size=11))
-    b.append(text(left, 226, "Median 6.3 s, 95th percentile 55.8 s. Two clusters: about 6 s, and 42 to 62 s (rate-limit waits).", size=11))
+    b.append(text(left, 226, "Median 6.3 s, 95th percentile 55.8 s. Two clusters: about 6 s, and 42 to 62 s.", size=11))
     return svg(w, h, "".join(b))
 
 

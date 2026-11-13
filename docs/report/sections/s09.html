@@ -1,0 +1,29 @@
+<div class="eyebrow">Section 9</div>
+<h2>The requirements revision</h2>
+<p>I revised the requirements on 11 November 2026 and wrote up each change in the revision log: what changed, what prompted it and who agreed. I was the only author and reviewer, so the log names me, and the document says it is not yet approved by anyone else. Eight requirements changed, one was added, none removed, and the success measures were rewritten.</p>
+<table><caption>Table 10. What changed and why</caption>
+<thead><tr><th style="width:17%">Requirement</th><th style="width:38%">Change</th><th>What prompted it</th></tr></thead><tbody>
+<tr><td>FR-02 documentation</td><td>Tell the agent when an article's "applies to" scope does not match the customer's plan (specified, not built)</td><td>VAL-0051 and VAL-0076: Standard-plan customers told about features limited to Business and Enterprise</td></tr>
+<tr><td>FR-03 grounded draft</td><td>Answer what the ticket body says and treat a conflicting subject as unconfirmed (specified, not built)</td><td>VAL-0049 and VAL-0078, where the draft followed the subject line</td></tr>
+<tr><td>FR-04 agent review</td><td>The system has no send path; "auto-respond" means only that a draft is ready</td><td>The route name was read as "sent automatically" and confused the routing numbers</td></tr>
+<tr><td>FR-05 insufficient evidence</td><td>Four intents always escalate</td><td>With the first prompt, 7 of 17 compliance requests were read as data exports and would have been answered</td></tr>
+<tr><td>FR-09 classification</td><td>Intent confidence gates drafting only once calibrated; urgency is advisory with no accuracy target</td><td>Urgency matched always-"medium"; confidence did not separate right from wrong</td></tr>
+<tr><td>NFR-01 latency</td><td>Target fixed at p95 under 3 seconds; first measurement recorded as missed</td><td>The "to be decided" had to be settled to evaluate against anything</td></tr>
+<tr><td>NFR-03 accuracy</td><td>Hallucination 5% or lower and citation accuracy 95% or higher by human review; automatic checks called retrieval checks</td><td>All 50 drafts passed the automatic checks, including the wrong ones above</td></tr>
+<tr><td>NFR-06 fairness</td><td>Gap under 5 points, intervals from scenario resampling, small groups inconclusive</td><td>Per-ticket intervals were too narrow because paraphrases are near-duplicates</td></tr>
+<tr><td>NFR-08 (new)</td><td>Labels never rewritten; calibration split by scenario; decisions on development data only</td><td>My first split leaked: 87 of 90 held-out tickets had a paraphrase in the fitting set</td></tr>
+<tr><td>Section 8 measures</td><td>Split into offline measures and pilot-only measures</td><td>The prototype never sends, so resolution, reply time and satisfaction cannot be measured offline</td></tr>
+</tbody></table>
+<h3>9.1 How the assumptions turned out</h3>
+<table><caption>Table 11. The six assumptions</caption>
+<thead><tr><th style="width:42%">Assumption</th><th style="width:12%">Held?</th><th>Evidence</th></tr></thead><tbody>
+<tr><td>The documentation is usable as the answer source</td><td>Largely</td><td>Expected article retrieved for 52 of 53 answerable validation tickets. The weakness was applicability to a plan, not coverage</td></tr>
+<tr><td>Tickets carry enough context for a useful draft</td><td>Partly</td><td>Bodies are usually enough, but subjects often disagree with them and the drafter followed the subject in the cases above</td></tr>
+<tr><td>Agents will review and edit drafts properly</td><td>Not tested</td><td>There was no pilot</td></tr>
+<tr><td>A confidence score can decide which tickets get an automatic answer (unwritten)</td><td>No</td><td>Mean intent confidence was 0.958 when right and 0.934 when wrong on development</td></tr>
+<tr><td>Urgency can be predicted from the text and used to route (unwritten)</td><td>No</td><td>Exact accuracy 47.5% on development, 43.8% on validation; level with always-"medium"</td></tr>
+<tr><td>A free provider can run the evaluation unattended (unwritten)</td><td>No</td><td>HTTP 429 stopped early runs; the final run needed two sessions</td></tr>
+</tbody></table>
+<h3>9.2 What it taught me</h3>
+<p>I started from the idea that confidence and urgency would work as control signals: a score would say which tickets could be answered and urgency which needed a person. The data said otherwise. What the interviews actually asked for was help finding the right article and a draft an agent can check, so the real job was making the agent's review dependable, not deciding what to automate. I would also look at the data before writing a target. Counting the repeated-text groups in the first week (67 of 97 with conflicting urgency labels) and comparing against the always-"medium" baseline would have shown that an urgency target meant nothing, and a small calibration check on 50 tickets would have done the same for confidence. I did neither until the second week.</p>
+<p>Several things I chose not to change are in the log with the reason. I did not relabel the conflicting urgency groups, because the hidden labels may conflict in the same way. I did not switch calibration on, because the gate filtered nothing. I did not rewrite the knowledge base, because retrieval already finds an article for 98% of answerable tickets. And I kept the revised classification prompt after its hypothesis failed.</p>

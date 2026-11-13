@@ -1,0 +1,76 @@
+<div class="appendix">
+<div class="eyebrow">Appendix A</div>
+<h2>Appendix A. Prompt register</h2>
+<table>
+<thead><tr><th style="width:8%">ID</th><th style="width:28%">Purpose</th><th>Versions</th><th style="width:10%">In use</th></tr></thead><tbody>
+<tr><td>PR-01</td><td>Design-time prompt used while planning</td><td>V1.0, no later revisions</td><td>No</td></tr>
+<tr><td>PR-02</td><td>Grounded reply drafter: answer only from the retrieved passages, cite each claim inline, say when evidence is insufficient</td><td>V1.0 initial. V2.0 (3 November 2026): inline citations and the structured list must match; stored citations come only from inline identifiers checked against the retrieved sources</td><td>v2.0</td></tr>
+<tr><td>PR-03</td><td>Classifier: intent from 22 labels, urgency, confidences, urgency evidence excerpt, ambiguity flag</td><td>V1.0 initial. V2 (1 November): evidence excerpt or ambiguity flag required. V3 (4 November): active-problem wording; on 16 development tickets urgency matched 10 of 15 for both v2 and v3, so not adopted. V4 (6 November): intent definitions and tie-break rules; development intent accuracy 85.6% to 93.2%; default since 9 November (H1 not fully met)</td><td>v4</td></tr>
+<tr><td>PR-04</td><td>Escalation summary prompt</td><td>V1.0. The implemented summary is built from the ticket, history and sources with no model call</td><td>No</td></tr>
+</tbody></table>
+
+<h2 class="pb">Appendix B. Full result tables</h2>
+{{perclass}}
+<p>Macro-averaged precision is 0.94 and recall 0.92. The four classes below 85% precision (account access, authentication failure, configuration help, security incident) each have 3 or 4 tickets. Security incident precision is low because some tickets that carry other labels were predicted as security incidents, which escalate.</p>
+<table><caption>Table B2. Routing on validation: route the labels expect against route taken</caption>
+<thead><tr><th></th><th>Escalated by system</th><th>Sent to review</th><th>Auto-responded</th></tr></thead><tbody>
+<tr><td>Labelled escalate (32)</td><td>14</td><td>18</td><td>0</td></tr>
+<tr><td>Labelled auto-respond (48)</td><td>3</td><td>45</td><td>0</td></tr></tbody></table>
+<table><caption>Table B3. Outcomes of the 80 validation tickets</caption>
+<thead><tr><th>Outcome</th><th>Tickets</th></tr></thead><tbody>
+<tr><td>Escalated, summary prepared, no draft</td><td>17</td></tr>
+<tr><td>Draft ready for agent review</td><td>50</td></tr>
+<tr><td>Note for a human: evidence insufficient</td><td>13</td></tr>
+<tr><td>Blocked by a guardrail</td><td>0</td></tr></tbody></table>
+<table><caption>Table B4. Latency by outcome, validation run</caption>
+<thead><tr><th>Group</th><th>Tickets</th><th>Median</th><th>95th percentile</th><th>Over 30 s</th></tr></thead><tbody>
+<tr><td>Escalated (classification only)</td><td>17</td><td>2.9 s</td><td>54.9 s</td><td>4</td></tr>
+<tr><td>Draft ready</td><td>50</td><td>6.3 s</td><td>53.9 s</td><td>14</td></tr>
+<tr><td>Needs human</td><td>13</td><td>6.1 s</td><td>57.1 s</td><td>3</td></tr>
+<tr><td>All</td><td>80</td><td>6.3 s</td><td>55.8 s</td><td>21</td></tr></tbody></table>
+
+<h2 class="pb">Appendix C. Requirement traceability</h2>
+<table>
+<thead><tr><th>Requirement</th><th>Code</th><th>Tests</th></tr></thead><tbody>
+<tr><td>FR-01 ticket and context</td><td>src/tickets.py, src/review_store.py</td><td>test_tickets, test_agent_review_api</td></tr>
+<tr><td>FR-02 documentation</td><td>src/retrieve.py</td><td>test_retrieve</td></tr>
+<tr><td>FR-03 grounded draft</td><td>src/answering.py, src/guardrails.py</td><td>test_answering</td></tr>
+<tr><td>FR-04 agent review, no send path</td><td>src/app.py, src/review_store.py, static/review.html</td><td>test_agent_review_api</td></tr>
+<tr><td>FR-05 insufficient evidence, must-escalate intents</td><td>src/routing.py, src/guardrails.py</td><td>test_classification_routing, test_answering</td></tr>
+<tr><td>FR-06 escalation summary</td><td>src/escalation.py</td><td>test_escalation</td></tr>
+<tr><td>FR-07 sources and decisions recorded</td><td>src/logging_store.py, src/pipeline.py, src/review_store.py</td><td>test_logging_store, test_answering</td></tr>
+<tr><td>FR-08 outcomes and feedback</td><td>src/outcome_store.py, src/dashboard.py</td><td>test_outcomes, test_dashboard</td></tr>
+<tr><td>FR-09 intent, urgency, confidence</td><td>src/classification.py, src/routing.py, src/calibration.py</td><td>test_classification_routing, test_calibration, test_review_urgency</td></tr>
+<tr><td>NFR-01 latency</td><td>src/evaluation.py</td><td>test_evaluation</td></tr>
+<tr><td>NFR-04, NFR-05 privacy, auditability</td><td>src/guardrails.py, src/logging_store.py</td><td>test_answering, test_logging_store</td></tr>
+<tr><td>NFR-06 fairness</td><td>scripts/analyze_accuracy_uncertainty.py, scripts/governance_fairness_audit.py</td><td>run on result files</td></tr>
+<tr><td>NFR-08 evaluation integrity</td><td>src/scenarios.py, src/evaluation.py</td><td>test_calibration, test_evaluation</td></tr></tbody></table>
+
+<h2 class="pb">Appendix D. Workbooks and reproduction</h2>
+<p><b>Submitted with this report.</b> The five stage workbooks (discovery, requirements version 2.0, prompt library, sprint plan, revision log) and the effort log in the workbooks folder, and the full repository in the source code folder. Supporting documents in the repository: <i>docs/governance.md</i>, <i>docs/governance_coverage_check.md</i>, <i>docs/validation_draft_review.md</i>, <i>docs/validation_latency_and_fairness.md</i>, <i>docs/development_error_analysis.md</i>, <i>docs/accuracy_uncertainty_and_fairness.md</i>, <i>docs/urgency_and_label_noise.md</i> and <i>docs/credential_scan.md</i>.</p>
+<p><b>Evaluation runs.</b> First validation run, 1 November 2026: 6 of 80 tickets before rate limiting. Paced run, 2 November: 80 of 80, prompt PR-03 v2, intent 88.8%. Final run in the final configuration: complete by 10 November, 80 of 80 with no errors, intent 91.3%, report regenerated 11 November. Hidden 120-ticket set: not run by me, zero times.</p>
+<p><b>Reproduction.</b> Install the requirements, copy <i>.env.example</i> to <i>.env</i> and add a model key. Run <i>python -m pytest tests -v</i> for the tests. Run <i>python scripts/run_evaluation.py --input &lt;tickets.json&gt; --output &lt;results.jsonl&gt; --processor src.pipeline:process_ticket</i> for an evaluation, adding <i>--resume</i> to continue an interrupted one, and <i>uvicorn src.app:app</i> for the review page. The demonstrations are <i>scripts/demo_guardrail_ticket.py</i> and <i>scripts/demo_failure_modes.py</i>.</p>
+
+<h2 class="pb">Appendix E. Open items and uncertainties</h2>
+<p>This appendix collects what I am not sure of, what I estimated, and what I have not yet checked. None of it is used in the main text as if it were established.</p>
+<table><caption>Table E1. Not yet checked</caption>
+<thead><tr><th style="width:28%">Item</th><th>State</th></tr></thead><tbody>
+<tr><td>Clean checkout (A1)</td><td>I have not yet cloned the repository into an empty directory on a second machine and followed the README step by step.</td></tr>
+<tr><td>Full test suite (A12)</td><td>62 tests pass under Python 3.9. The review API and dashboard tests need Python 3.11 and have not been run for this report.</td></tr>
+<tr><td>Deterministic routing (A5)</td><td>The router is a pure function and the model is called at temperature 0, but I did not run the same live ticket twice to confirm identical decisions.</td></tr>
+<tr><td>Hidden evaluation set</td><td>Not provided to me and not run.</td></tr>
+<tr><td>Kill switch</td><td>Restart-to-stop was not tested as a switch.</td></tr>
+</tbody></table>
+<table><caption>Table E2. Estimates, inferences and judgements</caption>
+<thead><tr><th style="width:28%">Item</th><th>What is uncertain</th></tr></thead><tbody>
+<tr><td>Hallucination and citation accuracy</td><td>Not measured. As a stand-in, one reader (the AI assistant, not a person) read the 50 validation drafts against the cited articles: 39 were sound, 7 contained a small assumption or embellishment, and 4 would mislead a reviewer who only skims. That is a read, not a rate. It cannot support a claim against the 5% and 95% targets.</td></tr>
+<tr><td>Cause of the slow tickets</td><td>21 of 80 tickets took 42 to 62 seconds in every outcome group. I believe they waited on the provider's rate limit, but I did not log the cause, so this is an inference.</td></tr>
+<tr><td>Fairness conclusions</td><td>Groups of 8 to 61 tickets cannot show a gap under about 20 points. "No evidence of a gap" is weaker than "no gap". Fairness of draft correctness and tone was not assessed.</td></tr>
+<tr><td>Does the prompt gain generalise?</td><td>The development gain came from roughly nine scenarios. On validation the two prompts differ by two tickets. I have no further unseen data to test another change.</td></tr>
+<tr><td>Why identical texts carry different urgency labels</td><td>Unknown. The supplied context (tier, fluency, channel, region) does not explain it. It may reflect customer circumstances that the text does not show.</td></tr>
+<tr><td>Free-tier model</td><td>I do not know whether Qwen 3.8 27B on Groq's free tier behaves like the model CloudServe would run.</td></tr>
+<tr><td>Risk ratings</td><td>The likelihood and impact ratings in Table 7 are my own judgement, not measurements.</td></tr>
+<tr><td>Effort log</td><td>Hours and daily entries are estimates reconstructed on 11 November from commit dates and project notes (about 80 hours in total to that date). Some task dates are approximate.</td></tr>
+<tr><td>Agent behaviour</td><td>Whether agents would catch a misleading draft is untested, because there was no pilot.</td></tr>
+</tbody></table>
+</div>

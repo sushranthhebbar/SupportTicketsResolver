@@ -1,0 +1,15 @@
+<div class="eyebrow">Section 1</div>
+<h2>Executive summary</h2>
+<p>CloudServe Solutions has about 150 staff, and its six support agents handle more than 500 tickets a week. A customer waits 8 to 12 hours for a first reply, although the service agreement says two, and about 42% of tickets are resolved on first contact. Marcus Adeyemi, the head of support, asked for a chatbot to answer the easy tickets without adding headcount.</p>
+<p>The ticket data pointed somewhere else. In the 500 development tickets, 71.4% are marked answerable from the existing knowledge base. The answers are there. Agents struggle to find them, and escalated tickets reach specialists with no notes on what has already been tried. A chatbot that replies on its own would also run into the one thing Marcus said would sink the project, a confident wrong answer.</p>
+<p>So I built an assistant for the agents. It reads a ticket, labels the intent and urgency, pulls the relevant passages from the 29 support articles, and drafts a reply that cites them. Tickets that need a specialist get an escalation summary instead of a draft. An agent reads everything before it goes anywhere, and the code has no way to send a message to a customer. Every step is written to a decision log, and guardrails stop tickets and drafts that carry credentials or instruction-like text.</p>
+<div class="stats">
+<div class="stat"><div class="n">91.3%</div><div class="l">intent correct<br>(73 of 80 validation tickets)</div></div>
+<div class="stat"><div class="n">98.1%</div><div class="l">answerable tickets with the expected article retrieved (52 of 53)</div></div>
+<div class="stat"><div class="n">14 / 14</div><div class="l">tickets that must go to a specialist were escalated</div></div>
+<div class="stat"><div class="n">80 / 80</div><div class="l">tickets processed and recorded in the decision log</div></div>
+<div class="stat amber"><div class="n">55.8 s</div><div class="l">95th percentile latency, against a 3 s target</div></div>
+</div>
+<p>Those results come from the 80 validation tickets, run once in the final configuration. Two other findings shaped the design. Urgency was right for 43.8% of tickets, which is exactly what answering "medium" every time would score, so urgency only orders the agent's queue and never changes a decision. And the model's confidence scores could not be turned into a safe rule for answering automatically, so ordinary tickets go to an agent for review.</p>
+<div class="callout warn"><b class="t">What this report does not show</b>
+I did not measure the hallucination rate or citation accuracy, because both need a person to judge each claim. I have no first contact resolution, reply time or satisfaction figures, because the prototype answers no real tickets. The hidden 120-ticket set has not been run by me. The latency figure was taken under free-tier rate limits. The numbers here describe how well the assistant classifies, retrieves and fails safely; they are not evidence that it improves CloudServe's support results.</div>

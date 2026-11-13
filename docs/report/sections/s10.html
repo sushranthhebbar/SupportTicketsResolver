@@ -1,0 +1,13 @@
+<div class="eyebrow">Section 10</div>
+<h2>Conclusions</h2>
+<p>CloudServe asked for a chatbot and I built an assistant for its agents. The discovery evidence favoured that: most of the answers already exist, the expensive tickets are the ones a machine should not handle alone, and the head of support named a confident wrong answer as the way the project fails. On the validation set the assistant labelled intent correctly for 91.3% of tickets, retrieved an expected article for 98.1% of the answerable ones, escalated all 14 tickets that policy sends to a specialist, kept a decision log that matched the tickets processed, and failed safely in each condition I could induce. It never sends anything to a customer.</p>
+<p>What it achieves for CloudServe is a different question, and the evidence does not answer it. Nothing was tested with agents on real tickets, so there is no first contact resolution, reply time or satisfaction result. The hallucination rate and citation accuracy are unmeasured. Latency is well over target under free-tier limits. The hidden set has not been run. Appendix E lists these and the smaller items that are still open.</p>
+<h3>10.1 What I would do next</h3>
+<ol>
+<li><b>Measure the drafts.</b> Run the two-assessor review of 50 drafts with agreement reported. The packet, blank score sheets and scoring script are in the repository (<i>evaluation/human_review</i>).</li>
+<li><b>Fix the two draft problems.</b> Treat a subject that conflicts with the body as unconfirmed, and compare an article's plan scope with the customer's plan. Both are written into the requirements, and checking them needs a fresh set of tickets.</li>
+<li><b>Close the guardrail gaps.</b> Add the commitments check (no promises about refunds or timelines), widen the private-data patterns beyond credentials, and test paraphrased injection attempts.</li>
+<li><b>Build a live intake and a runtime kill switch,</b> with a named operator and a test that it works.</li>
+<li><b>Run a supervised pilot</b> with a few Tier One agents on real tickets, recording review time, edits, rejections, first contact resolution and satisfaction, split by tier and fluency. Enterprise customers already have the lowest first contact resolution in the data, so they need particular attention.</li>
+<li><b>Measure latency without pacing,</b> on a key with higher limits, recording where each ticket's time goes.</li>
+</ol>
