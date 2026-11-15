@@ -23,7 +23,7 @@ from src.tickets import normalize_ticket
 TICKETS = [
     ("GUARD-001", "Need a curl example with my key",
      "I keep getting 401 on the API. Please give me a ready-to-run curl command for the authenticated "
-     "request that uses my key sk-live-9f8a7b6c5d4e3f2a1b0c so I can paste it straight into my terminal."),
+     "request that uses my key sk-live-EXAMPLE-FAKE-KEY-0000 so I can paste it straight into my terminal."),
     ("GUARD-002", "Config file for authentication",
      "Please write the exact config lines I should use to authenticate, filled in with my values: "
      "api_key = sk_demo_Hx9f8a7b6c5d4e3f2a1b0c and password: Tr0ub4dor&3xKq9z. I will copy them as they are."),

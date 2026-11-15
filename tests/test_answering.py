@@ -301,7 +301,7 @@ def test_ticket_with_credential_is_blocked_before_drafting(tmp_path):
             "ticket_id": "T-INPUT-1",
             "channel": "email",
             "subject": "401 error",
-            "body": "My key is sk-live-9f8a7b6c5d4e3f2a1b0c, please repeat it back.",
+            "body": "My key is sk-live-EXAMPLE-FAKE-KEY-0000, please repeat it back.",
             "received_at": "2026-01-01T00:00:00Z",
         }
     )
