@@ -48,27 +48,27 @@
 
 <h2 class="pb">Appendix D. Workbooks and reproduction</h2>
 <p><b>Submitted with this report.</b> The five stage workbooks (discovery, requirements version 2.0, prompt library, sprint plan, revision log) and the effort log in the workbooks folder, and the full repository in the source code folder. Supporting documents in the repository: <i>docs/governance.md</i>, <i>docs/governance_coverage_check.md</i>, <i>docs/validation_draft_review.md</i>, <i>docs/validation_latency_and_fairness.md</i>, <i>docs/development_error_analysis.md</i>, <i>docs/accuracy_uncertainty_and_fairness.md</i>, <i>docs/urgency_and_label_noise.md</i> and <i>docs/credential_scan.md</i>.</p>
-<p><b>Evaluation runs.</b> First validation run, 1 November 2026: 6 of 80 tickets before rate limiting. Paced run, 2 November: 80 of 80, prompt PR-03 v2, intent 88.8%. Final run in the final configuration: complete by 10 November, 80 of 80 with no errors, intent 91.3%, report regenerated 11 November. Hidden 120-ticket set: not run by me, zero times.</p>
+<p><b>Evaluation runs.</b> First validation run, 1 November 2026: 6 of 80 tickets before rate limiting. Paced run, 2 November: 80 of 80, prompt PR-03 v2, intent 88.8%. Final run in the final configuration: complete by 10 November, 80 of 80 with no errors, intent 91.3%, report regenerated 11 November. Hidden 120-ticket set: not run during development (zero times).</p>
 <p><b>Reproduction.</b> Install the requirements, copy <i>.env.example</i> to <i>.env</i> and add a model key. Run <i>python -m pytest tests -v</i> for the tests. Run <i>python scripts/run_evaluation.py --input &lt;tickets.json&gt; --output &lt;results.jsonl&gt; --processor src.pipeline:process_ticket</i> for an evaluation, adding <i>--resume</i> to continue an interrupted one, and <i>uvicorn src.app:app</i> for the review page. The demonstrations are <i>scripts/demo_guardrail_ticket.py</i> and <i>scripts/demo_failure_modes.py</i>.</p>
 
 <h2 class="pb">Appendix E. Open items and uncertainties</h2>
-<p>This appendix collects what I am not sure of, what I estimated, and what I have not yet checked. None of it is used in the main text as if it were established. Table E1 lists the checks not yet made and Table E2 the estimates and judgements.</p>
+<p>This appendix collects what remains uncertain, what was estimated, and what has not yet been checked. None of it is used in the main text as if it were established. Table E1 lists the checks not yet made and Table E2 the estimates and judgements.</p>
 <table><caption>Table E1. Not yet checked</caption>
 <thead><tr><th style="width:28%">Item</th><th>State</th></tr></thead><tbody>
-<tr><td>Clean checkout (A1)</td><td>I have not yet cloned the repository into an empty directory on a second machine and followed the README step by step.</td></tr>
-<tr><td>Deterministic routing (A5)</td><td>The router is a pure function and the model is called at temperature 0, but I did not run the same live ticket twice to confirm identical decisions.</td></tr>
-<tr><td>Hidden evaluation set</td><td>Not provided to me and not run.</td></tr>
+<tr><td>Clean checkout (A1)</td><td>The repository has not yet been cloned into an empty directory on a second machine and set up by following the README step by step.</td></tr>
+<tr><td>Deterministic routing (A5)</td><td>The router is a pure function and the model is called at temperature 0, but the same live ticket was not run twice to confirm identical decisions.</td></tr>
+<tr><td>Hidden evaluation set</td><td>Not provided and not run.</td></tr>
 <tr><td>Kill switch</td><td>Restart-to-stop was not tested as a switch.</td></tr>
 </tbody></table>
 <table><caption>Table E2. Estimates, inferences and judgements</caption>
 <thead><tr><th style="width:28%">Item</th><th>What is uncertain</th></tr></thead><tbody>
 <tr><td>Hallucination and citation accuracy</td><td>Not measured. As a stand-in, one reader (the AI assistant, not a person) read the 50 validation drafts against the cited articles: 39 were sound, 7 contained a small assumption or embellishment, and 4 would mislead a reviewer who only skims. That is a read, not a rate. It cannot support a claim against the 5% and 95% targets.</td></tr>
-<tr><td>Cause of the slow tickets</td><td>21 of 80 tickets took 42 to 62 seconds in every outcome group. I believe they waited on the provider's rate limit, but I did not log the cause, so this is an inference.</td></tr>
+<tr><td>Cause of the slow tickets</td><td>21 of 80 tickets took 42 to 62 seconds in every outcome group. They most likely waited on the provider's rate limit, but the cause was not logged, so this is an inference.</td></tr>
 <tr><td>Fairness conclusions</td><td>Groups of 8 to 61 tickets cannot show a gap under about 20 points. "No evidence of a gap" is weaker than "no gap". Fairness of draft correctness and tone was not assessed.</td></tr>
-<tr><td>Does the prompt gain generalise?</td><td>The development gain came from roughly nine scenarios. On validation the two prompts differ by two tickets. I have no further unseen data to test another change.</td></tr>
+<tr><td>Does the prompt gain generalise?</td><td>The development gain came from roughly nine scenarios. On validation the two prompts differ by two tickets. No further unseen data is available to test another change.</td></tr>
 <tr><td>Why identical texts carry different urgency labels</td><td>Unknown. The supplied context (tier, fluency, channel, region) does not explain it. It may reflect customer circumstances that the text does not show.</td></tr>
-<tr><td>Free-tier model</td><td>I do not know whether Qwen 3.8 27B on Groq's free tier behaves like the model CloudServe would run.</td></tr>
-<tr><td>Risk ratings</td><td>The likelihood and impact ratings in Table 7 are my own judgement, not measurements.</td></tr>
+<tr><td>Free-tier model</td><td>It is not known whether Qwen 3.8 27B on Groq's free tier behaves like the model CloudServe would run.</td></tr>
+<tr><td>Risk ratings</td><td>The likelihood and impact ratings in Table 7 are judgements, not measurements.</td></tr>
 <tr><td>Effort log</td><td>Hours and daily entries are estimates reconstructed on 11 November from commit dates and project notes (about 80 hours in total to that date). Some task dates are approximate.</td></tr>
 <tr><td>Agent behaviour</td><td>Whether agents would catch a misleading draft is untested, because there was no pilot.</td></tr>
 </tbody></table>

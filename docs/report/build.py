@@ -91,7 +91,7 @@ def toc_html(pages):
         rows.append(f"<div class='{cls}'><span class='t'>{label}</span><span class='d'></span><span class='p'>{pages.get(sid, '')}</span></div>")
     note = ("<p class='note'>Every performance figure states the data it was measured on. Three sets of tickets are used: "
             "500 development tickets (analysis and design decisions), 80 validation tickets (final comparison, never used for tuning), "
-            "and a hidden set of 120 tickets that I was not given. Appendix E lists what is unmeasured or not yet checked.</p>")
+            "and a hidden set of 120 tickets that was not provided. Appendix E lists what is unmeasured or not yet checked.</p>")
     return f"<div class='toc' style='page-break-after: always'><h1>Contents</h1>{''.join(rows)}{note}</div>"
 
 
