@@ -85,7 +85,7 @@ reaching an agent or, if someone adds a send path, a customer.
 | 3. Assess | Query `storage/decisions.db` for the ticket_id: read the classification, answer_drafting and routing rows, with `prompt_version`, sources used and guardrail results. Decide: model error, retrieval error, stale article, guardrail gap, or someone changed the instructions. Count other tickets with the same article or intent. | Owner | Within a day |
 | 4. Notify | Tell the Head of Support and affected agents; if a customer received an incorrect statement, the agent corrects it through the normal channel. If private data left the system, notify whoever is responsible for data protection (not named; open question). | Owner to Head of Support | Within a day |
 | 5. Remediate | Fix the cause (prompt, article, guardrail, or threshold), add a test that reproduces the ticket, run the test suite, then restore. Do not change the frozen validation configuration without recording a new run. | Owner | Days |
-| 6. Review | Write what happened and what changed in `docs/project_memory.md`; update the risk register; check whether the PRD needs a revision. | Owner with Head of Support | Within a week |
+| 6. Review | Write what happened and what changed in an incident note under `docs/`; update the risk register; check whether the PRD needs a revision. | Owner with Head of Support | Within a week |
 
 ### The kill switch
 

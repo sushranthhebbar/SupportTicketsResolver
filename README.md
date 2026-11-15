@@ -51,8 +51,7 @@ review those results and set `CALIBRATION_ARTIFACT=evaluation/calibration/calibr
 in `.env`. It applies only to predictions from the same model and prompt version it was
 fitted for (`calibration-v2` is PR-03-v2 only); otherwise tickets stay in human review.
 `calibration-v3` is currently not recommended for activation: under PR-03-v4 the intent
-confidence takes three values and does not separate right from wrong, so the 0.80 gate filters nothing
-(see `docs/project_memory.md`).
+confidence takes three values and does not separate right from wrong, so the 0.80 gate filters nothing.
 
 Compare a classifier prompt against the stored PR-03-v2 development baseline
 (live calls, development tickets only; about 340 calls at roughly 1.4K tokens each, so it
@@ -172,7 +171,7 @@ The GitHub Actions workflow at `.github/workflows/ci.yml` installs the pinned de
 - `data/documentation.json` is the retrieval corpus.
 - `evaluation/data/` contains the supplied development, validation, and reference-response datasets. Their labels are preserved as supplied, including conflicting urgency annotations; see `docs/architecture.md` for the human-review fallback. `evaluation/results/` is for dated evaluation outputs.
 - `prompts/` separates runtime prompts from evaluation prompts.
-- `docs/` contains architecture notes and the supplied project reference materials.
+- `docs/` contains architecture notes and the governance and evaluation analyses.
 - `storage/` is generated at runtime and is excluded from Git.
 
 The FastAPI agent review API is available for local use. Generated replies remain

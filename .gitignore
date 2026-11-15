@@ -6,3 +6,11 @@ __pycache__/
 .venv/
 .venv311/
 ~$*
+
+# Kept locally, not part of the submitted source
+.DS_Store
+docs/reference/
+docs/report/
+docs/project_memory.md
+docs/PROJECT_HANDOFF.md
+fill_discovery_section2.py
